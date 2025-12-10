@@ -92,7 +92,7 @@ import CategoriesManagement from './CategoriesManagement.vue'
 import { formatPrice } from '../../utils/priceFormatter'
 import { isAuthenticated, getCurrentUser, clearAuth, refreshToken, getRemainingSessionTime, isTokenExpiringSoon } from '../../utils/auth'
 import { useToast } from '../../composables/useToast'
-import { adminStatsAPI, adminAuth, productsAPI } from '../../api'
+import { adminStatsAPI, adminAuth } from '../../api'
 
 const router = useRouter()
 const toast = useToast()
