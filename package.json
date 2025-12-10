@@ -1,0 +1,28 @@
+{
+  "name": "jewelry-app",
+  "version": "1.0.0",
+  "description": "专业精美的首饰展示应用",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "wrangler": "wrangler",
+    "wrangler:dev": "wrangler dev",
+    "wrangler:deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 execute jewelry-db --file=./migrations/0001_initial_schema.sql",
+    "db:query": "wrangler d1 execute jewelry-db"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "pinia": "^2.1.7",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.5.0",
+    "sass": "^1.69.5",
+    "vite": "^5.0.8",
+    "wrangler": "^4.53.0"
+  }
+}

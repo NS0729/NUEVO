@@ -1,0 +1,321 @@
+<template>
+  <div class="search-page">
+    <div class="container">
+      <div class="search-header">
+        <div class="search-box">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="搜索首饰..."
+            class="search-input"
+            @input="handleSearch"
+            @keyup.enter="handleSearch"
+          />
+          <button class="search-button" @click="handleSearch">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div v-if="searchQuery" class="search-results">
+        <div class="results-header">
+          <h2>搜索结果</h2>
+          <p class="results-count">找到 {{ searchResults.length }} 件商品</p>
+        </div>
+
+        <div v-if="searchResults.length === 0" class="empty-results">
+          <div class="empty-icon">🔍</div>
+          <h3>未找到相关商品</h3>
+          <p>请尝试其他关键词</p>
+        </div>
+
+        <div v-else class="products-grid">
+          <ProductCard
+            v-for="product in searchResults"
+            :key="product.id"
+            :product="product"
+          />
+        </div>
+      </div>
+
+      <div v-else class="search-suggestions">
+        <h2>热门搜索</h2>
+        <div class="suggestions-list">
+          <button
+            v-for="suggestion in suggestions"
+            :key="suggestion"
+            class="suggestion-tag"
+            @click="searchQuery = suggestion; handleSearch()"
+          >
+            {{ suggestion }}
+          </button>
+        </div>
+
+        <div class="categories-preview">
+          <h2>浏览分类</h2>
+          <div class="categories-list">
+            <router-link
+              v-for="category in categories"
+              :key="category.id"
+              :to="`/category/${category.id}`"
+              class="category-preview-card"
+            >
+              <span class="category-icon">{{ category.icon }}</span>
+              <span class="category-name">{{ category.name }}</span>
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useJewelryStore } from '../store'
+import ProductCard from '../components/ProductCard.vue'
+
+const store = useJewelryStore()
+const searchQuery = ref('')
+const searchResults = ref([])
+
+const categories = store.categories
+const suggestions = ['钻石', '黄金', '珍珠', '翡翠', '蓝宝石', '戒指', '项链']
+
+const handleSearch = () => {
+  if (searchQuery.value.trim()) {
+    searchResults.value = store.searchProducts(searchQuery.value)
+  } else {
+    searchResults.value = []
+  }
+}
+
+onMounted(async () => {
+  // 如果商品列表为空，先加载商品
+  if (store.products.length === 0 && !store.isLoading) {
+    await store.loadProducts()
+  }
+  
+  // 如果有初始搜索查询，执行搜索
+  if (store.searchQuery) {
+    searchQuery.value = store.searchQuery
+    handleSearch()
+  }
+})
+</script>
+
+<style lang="scss" scoped>
+.search-page {
+  padding: 3rem 0 5rem;
+  min-height: 60vh;
+}
+
+.search-header {
+  margin-bottom: 3rem;
+}
+
+.search-box {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0;
+  background: #fff;
+  border-radius: 50px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  transition: var(--transition-smooth);
+
+  &:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-lg);
+    transform: scale(1.02);
+  }
+
+  @media (max-width: 768px) {
+    border-radius: 25px;
+    
+    &:focus-within {
+      transform: scale(1.01);
+    }
+  }
+}
+
+.search-input {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  border: none;
+  font-size: 1rem;
+  outline: none;
+  color: var(--text-primary);
+
+  &::placeholder {
+    color: var(--text-light);
+  }
+}
+
+.search-button {
+  padding: 1.25rem 2rem;
+  background: var(--primary-gradient);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+
+  &:hover {
+    filter: brightness(1.1);
+    transform: scale(1.05);
+  }
+}
+
+.search-results {
+  .results-header {
+    margin-bottom: 2rem;
+
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+  }
+
+  .results-count {
+    color: var(--text-secondary);
+  }
+}
+
+.empty-results {
+  text-align: center;
+  padding: 4rem 2rem;
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+  }
+
+  p {
+    color: var(--text-secondary);
+  }
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.search-suggestions {
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+  }
+}
+
+.suggestions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 4rem;
+}
+
+.suggestion-tag {
+  padding: 0.875rem 1.75rem;
+  background: var(--accent-color);
+  border-radius: 25px;
+  color: var(--text-primary);
+  font-weight: 500;
+  transition: var(--transition-smooth);
+  border: 1px solid var(--border-color);
+
+  &:hover {
+    background: var(--primary-gradient);
+    color: #fff;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: var(--shadow-md);
+    border-color: transparent;
+  }
+}
+
+.categories-preview {
+  margin-top: 4rem;
+
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+  }
+}
+
+.categories-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.category-preview-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+  border: 1px solid var(--border-color);
+
+  &:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+    
+    .category-icon {
+      transform: scale(1.2) rotate(5deg);
+    }
+    
+    .category-name {
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  }
+
+  .category-icon {
+    font-size: 3.5rem;
+    transition: var(--transition-smooth);
+    filter: drop-shadow(0 4px 8px rgba(255, 105, 180, 0.2));
+  }
+
+  .category-name {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: var(--transition-smooth);
+  }
+}
+</style>
+
