@@ -201,33 +201,25 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
-    // 模拟API调用延迟
-    await new Promise(resolve => setTimeout(resolve, 800))
-
-    // 演示登录验证（实际应该调用API）
-    if (username === 'admin' && password === 'admin123') {
-      // 生成token（实际应该从服务器获取）
-      const token = 'admin_token_' + Date.now()
-      
-      // 保存认证信息
-      saveAuth(token, username)
-      
-      toast.success('登录成功，正在跳转...')
-      
-      setTimeout(() => {
-        router.push('/admin/dashboard')
-        loading.value = false
-      }, 500)
-    } else {
+    // 调用API登录
+    const { adminAuth } = await import('../../api')
+    const response = await adminAuth.login(username, password)
+    
+    // 保存认证信息
+    saveAuth(response.token, response.username, response.expiresAt)
+    
+    toast.success('登录成功，正在跳转...')
+    
+    setTimeout(() => {
+      router.push('/admin/dashboard')
       loading.value = false
-      toast.error('用户名或密码错误')
-      // 增加失败次数限制（实际应该在后端实现）
-      errors.value.password = '用户名或密码错误'
-    }
+    }, 500)
   } catch (error) {
     loading.value = false
     console.error('登录失败:', error)
-    toast.error('登录失败，请稍后重试')
+    const errorMessage = error.message || '登录失败，请稍后重试'
+    toast.error(errorMessage)
+    errors.value.password = errorMessage
   }
 }
 

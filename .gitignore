@@ -9,6 +9,8 @@ coverage/
 # Production
 dist/
 build/
+frontend/dist/
+frontend/build/
 
 # Environment variables
 .env
@@ -37,7 +39,9 @@ lerna-debug.log*
 
 # Wrangler
 .wrangler/
+backend/.wrangler/
 .dev.vars
+backend/.dev.vars
 
 # Database files (本地数据库文件，不要提交到GitHub)
 *.db

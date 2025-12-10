@@ -141,24 +141,53 @@ const closeModal = () => {
 const handleSave = async (productData) => {
   try {
     // 验证必填字段
-    if (!productData.name || !productData.category || !productData.price || !productData.image) {
-      toast.error('请填写所有必填字段')
+    if (!productData.name || !productData.name.trim()) {
+      toast.error('请输入商品名称')
+      return
+    }
+    if (!productData.category) {
+      toast.error('请选择商品分类')
+      return
+    }
+    if (!productData.price || productData.price <= 0) {
+      toast.error('请输入有效的商品价格')
+      return
+    }
+    if (!productData.image) {
+      toast.error('请选择商品图片')
       return
     }
 
     console.log('💾 开始保存商品:', productData.name)
+    console.log('📦 商品数据:', {
+      name: productData.name,
+      category: productData.category,
+      price: productData.price,
+      hasImage: !!productData.image,
+      imageLength: productData.image?.length || 0
+    })
+
+    // 确保价格是数字
+    const productDataToSend = {
+      ...productData,
+      price: Number(productData.price),
+      originalPrice: productData.originalPrice ? Number(productData.originalPrice) : null,
+      inStock: Boolean(productData.inStock),
+      featured: Boolean(productData.featured)
+    }
 
     if (editingProduct.value) {
       // 更新商品
       console.log('📝 更新商品 ID:', editingProduct.value.id)
-      await productsAPI.update(editingProduct.value.id, productData)
+      const response = await productsAPI.update(editingProduct.value.id, productDataToSend)
+      console.log('✅ 更新商品响应:', response)
       toast.success('商品已更新')
     } else {
       // 添加新商品
       console.log('➕ 创建新商品')
-      const response = await productsAPI.create(productData)
+      const response = await productsAPI.create(productDataToSend)
       console.log('✅ 创建商品响应:', response)
-      if (!response.id) {
+      if (!response || !response.id) {
         throw new Error('创建商品失败：未返回商品ID')
       }
       toast.success('商品已添加')
@@ -173,6 +202,11 @@ const handleSave = async (productData) => {
     console.log('✅ 商品列表已刷新')
   } catch (error) {
     console.error('❌ 保存商品失败:', error)
+    console.error('错误详情:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    })
     const errorMessage = error.message || '未知错误'
     toast.error('保存失败: ' + errorMessage)
   }

@@ -11,11 +11,20 @@ const SESSION_TIMEOUT = 2 * 60 * 60 * 1000 // 2小时
  * 保存认证信息
  * @param {string} token - 认证token
  * @param {string} username - 用户名
+ * @param {string} expiresAt - token过期时间（ISO字符串）
  */
-export function saveAuth(token, username) {
+export function saveAuth(token, username, expiresAt = null) {
   localStorage.setItem(TOKEN_KEY, token)
   localStorage.setItem(USER_KEY, username)
-  localStorage.setItem(TOKEN_EXPIRY_KEY, String(Date.now() + SESSION_TIMEOUT))
+  
+  if (expiresAt) {
+    // 使用服务器返回的过期时间
+    const expiryTime = new Date(expiresAt).getTime()
+    localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiryTime))
+  } else {
+    // 使用默认的2小时过期时间
+    localStorage.setItem(TOKEN_EXPIRY_KEY, String(Date.now() + SESSION_TIMEOUT))
+  }
 }
 
 /**

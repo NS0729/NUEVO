@@ -72,9 +72,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ordersAPI } from '../../api'
 import { formatPrice } from '../../utils/priceFormatter'
+import { useToast } from '../../composables/useToast'
+
+const toast = useToast()
 
 const orders = ref([])
 const statusFilter = ref('')
@@ -92,9 +95,12 @@ const formatDate = (dateString) => {
 
 const loadOrders = async () => {
   try {
-    // 这里应该调用 API 获取订单列表
-    // 暂时使用空数组
-    orders.value = []
+    const params = {}
+    if (statusFilter.value) {
+      params.status = statusFilter.value
+    }
+    const response = await ordersAPI.getAll(params)
+    orders.value = response.orders || []
   } catch (error) {
     console.error('加载订单失败:', error)
     orders.value = []
@@ -103,17 +109,25 @@ const loadOrders = async () => {
 
 const updateOrderStatus = async (orderId, newStatus) => {
   try {
-    // 这里应该调用 API 更新订单状态
+    await ordersAPI.updateStatus(orderId, newStatus)
+    // 更新本地订单状态
     const order = orders.value.find(o => o.id === orderId)
     if (order) {
       order.status = newStatus
     }
-    alert('订单状态已更新')
+    toast.success('订单状态已更新')
   } catch (error) {
     console.error('更新订单状态失败:', error)
-    alert('更新失败')
+    toast.error(error.message || '更新失败')
+    // 重新加载订单以恢复原状态
+    loadOrders()
   }
 }
+
+// 监听状态筛选变化，重新加载订单
+watch(statusFilter, () => {
+  loadOrders()
+})
 
 onMounted(() => {
   loadOrders()

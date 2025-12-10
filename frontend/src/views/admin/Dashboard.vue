@@ -92,6 +92,7 @@ import CategoriesManagement from './CategoriesManagement.vue'
 import { formatPrice } from '../../utils/priceFormatter'
 import { isAuthenticated, getCurrentUser, clearAuth, refreshToken, getRemainingSessionTime, isTokenExpiringSoon } from '../../utils/auth'
 import { useToast } from '../../composables/useToast'
+import { adminStatsAPI, adminAuth, productsAPI } from '../../api'
 
 const router = useRouter()
 const toast = useToast()
@@ -118,17 +119,16 @@ const remainingTime = ref(0)
 const loadStats = async () => {
   try {
     // 调用 API 获取统计数据
-    const productsResponse = await productsAPI.getAll()
-    const products = productsResponse.products || []
-    
+    const data = await adminStatsAPI.getStats()
     stats.value = {
-      totalProducts: products.length,
-      totalOrders: 0, // TODO: 从订单API获取
-      totalRevenue: 0, // TODO: 从订单API计算
-      pendingOrders: 0, // TODO: 从订单API获取
+      totalProducts: data.totalProducts || 0,
+      totalOrders: data.totalOrders || 0,
+      totalRevenue: data.totalRevenue || 0,
+      pendingOrders: data.pendingOrders || 0,
     }
   } catch (error) {
     console.error('加载统计数据失败:', error)
+    toast.error('加载统计数据失败')
     // 如果API失败，使用默认值
     stats.value = {
       totalProducts: 0,
@@ -139,8 +139,14 @@ const loadStats = async () => {
   }
 }
 
-const handleLogout = () => {
+const handleLogout = async () => {
   if (confirm('确定要退出登录吗？')) {
+    try {
+      // 调用API登出
+      await adminAuth.logout()
+    } catch (error) {
+      console.error('登出API调用失败:', error)
+    }
     clearAuth()
     toast.success('已安全退出')
     router.push('/admin/login')
