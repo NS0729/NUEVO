@@ -1,5 +1,5 @@
 <template>
-  <div id="app" :class="{ 'admin-layout': isAdminRoute }">
+  <div :class="{ 'admin-layout': isAdminRoute }">
     <NavBar v-if="!isAdminRoute" />
     <router-view v-slot="{ Component, route }">
       <transition name="fade" mode="out-in">
