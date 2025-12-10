@@ -92,6 +92,7 @@ import CategoriesManagement from './CategoriesManagement.vue'
 import { formatPrice } from '../../utils/priceFormatter'
 import { isAuthenticated, getCurrentUser, clearAuth, refreshToken, getRemainingSessionTime, isTokenExpiringSoon } from '../../utils/auth'
 import { useToast } from '../../composables/useToast'
+// 导入 API - 使用命名导入
 import { adminStatsAPI, adminAuth } from '../../api'
 
 const router = useRouter()
@@ -118,8 +119,17 @@ const remainingTime = ref(0)
 
 const loadStats = async () => {
   try {
+    // 确保 adminStatsAPI 已正确导入
+    if (!adminStatsAPI || typeof adminStatsAPI.getStats !== 'function') {
+      console.error('❌ adminStatsAPI 未正确导入')
+      throw new Error('统计数据API未正确加载，请刷新页面')
+    }
+    
     // 调用 API 获取统计数据
+    console.log('📊 开始加载统计数据...')
     const data = await adminStatsAPI.getStats()
+    console.log('✅ 统计数据加载成功:', data)
+    
     stats.value = {
       totalProducts: data.totalProducts || 0,
       totalOrders: data.totalOrders || 0,
@@ -127,8 +137,14 @@ const loadStats = async () => {
       pendingOrders: data.pendingOrders || 0,
     }
   } catch (error) {
-    console.error('加载统计数据失败:', error)
-    toast.error('加载统计数据失败')
+    console.error('❌ 加载统计数据失败:', error)
+    console.error('错误详情:', {
+      message: error.message,
+      stack: error.stack,
+      adminStatsAPI: typeof adminStatsAPI,
+      getStats: typeof adminStatsAPI?.getStats
+    })
+    toast.error('加载统计数据失败: ' + (error.message || '未知错误'))
     // 如果API失败，使用默认值
     stats.value = {
       totalProducts: 0,

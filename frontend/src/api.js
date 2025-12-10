@@ -267,6 +267,11 @@ export const adminStatsAPI = {
   },
 }
 
+// 确保 adminStatsAPI 正确导出（防止构建优化问题）
+if (typeof window !== 'undefined') {
+  window.__adminStatsAPI = adminStatsAPI
+}
+
 /**
  * 健康检查
  */
