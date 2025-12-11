@@ -16,11 +16,12 @@
         <router-link to="/" class="btn btn-primary">返回首页</router-link>
       </div>
 
-      <div v-else class="products-grid">
+      <div v-else class="products-grid" :class="{ 'landscape-mode': isLandscape && isMobile }">
         <ProductCard
           v-for="product in products"
           :key="product.id"
           :product="product"
+          :is-landscape="isLandscape && isMobile"
         />
       </div>
     </div>
@@ -32,9 +33,13 @@ import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useJewelryStore } from '../store'
 import ProductCard from '../components/ProductCard.vue'
+import { useOrientation } from '../composables/useOrientation'
 
 const route = useRoute()
 const store = useJewelryStore()
+
+// 横屏检测
+const { isLandscape, isMobile } = useOrientation()
 
 const categoryId = route.params.id
 
@@ -128,6 +133,42 @@ onMounted(async () => {
   @media (max-width: 480px) {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+  }
+
+  // 横屏模式：横向滚动布局
+  &.landscape-mode {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 1.5rem;
+    padding-bottom: 1rem;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-light) transparent;
+
+    &::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--primary-light);
+      border-radius: 3px;
+    }
+
+    // 商品卡片在横屏时的样式
+    :deep(.product-card) {
+      flex: 0 0 auto;
+      width: 85vw;
+      max-width: 400px;
+      min-width: 300px;
+      scroll-snap-align: start;
+    }
   }
 }
 

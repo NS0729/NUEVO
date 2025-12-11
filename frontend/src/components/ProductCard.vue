@@ -1,5 +1,5 @@
 <template>
-  <div class="product-card" @click="goToDetail">
+  <div class="product-card" :class="{ 'landscape-layout': isLandscape }" @click="goToDetail">
     <div class="product-image-wrapper">
       <img 
         :src="product.image" 
@@ -118,6 +118,10 @@ const props = defineProps({
   product: {
     type: Object,
     required: true
+  },
+  isLandscape: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -244,6 +248,109 @@ const onImageError = (e) => {
 
     .product-name {
       color: var(--primary-color);
+    }
+  }
+
+  // 横屏布局：横向排列（图片在左，信息在右）
+  &.landscape-layout {
+    flex-direction: row;
+    height: auto;
+    min-height: 200px;
+    max-height: 250px;
+
+    .product-image-wrapper {
+      flex: 0 0 40%;
+      max-width: 200px;
+      aspect-ratio: 1;
+      height: 100%;
+    }
+
+    .product-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      min-width: 0; // 防止内容溢出
+
+      .product-name {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .product-description {
+        font-size: 0.75rem;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .product-price {
+        margin-bottom: 0.5rem;
+      }
+
+      .product-meta {
+        font-size: 0.7rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .quantity-selector {
+        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+
+        .quantity-label {
+          font-size: 0.75rem;
+        }
+
+        .quantity-controls {
+          .qty-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 0.9rem;
+          }
+
+          .qty-input {
+            width: 40px;
+            height: 28px;
+            font-size: 0.85rem;
+          }
+        }
+      }
+
+      .product-actions {
+        flex-direction: row;
+        gap: 0.5rem;
+        margin-top: auto;
+
+        .action-btn {
+          flex: 1;
+          padding: 0.5rem 0.75rem;
+          font-size: 0.75rem;
+          white-space: nowrap;
+          min-height: 36px;
+
+          svg {
+            width: 14px;
+            height: 14px;
+          }
+        }
+      }
+    }
+
+    // 横屏时隐藏覆盖层，直接显示信息
+    .product-overlay {
+      display: none;
+    }
+
+    &:hover {
+      transform: translateY(-4px) scale(1.01);
     }
   }
 }
