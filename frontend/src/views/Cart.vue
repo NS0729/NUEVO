@@ -273,6 +273,10 @@ const handleCheckout = () => {
 .cart-page {
   padding: 3rem 0 5rem;
   min-height: 60vh;
+
+  @media (max-width: 768px) {
+    padding-bottom: 6rem; // 为底部导航栏预留空间
+  }
 }
 
 .page-header {
@@ -288,6 +292,14 @@ const handleCheckout = () => {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: 700;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.75rem;
+  }
 }
 
 .page-subtitle {
@@ -407,6 +419,13 @@ const handleCheckout = () => {
   @media (max-width: 768px) {
     grid-template-columns: 100px 1fr;
     gap: 1rem;
+    padding: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 80px 1fr;
+    gap: 0.75rem;
+    padding: 0.75rem;
   }
 }
 
@@ -537,9 +556,20 @@ const handleCheckout = () => {
   transition: var(--transition-smooth);
   background: transparent;
 
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
   &:hover:not(:disabled) {
     background: var(--primary-light);
     color: #fff;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.9);
   }
 
   &:disabled {
@@ -715,11 +745,23 @@ const handleCheckout = () => {
   border: none;
   cursor: pointer;
   margin-bottom: 1.5rem;
+  min-height: 52px;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    font-size: 1.15rem;
+    min-height: 56px;
+  }
 
   &:hover {
     background: #20BA5A;
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
+  }
+
+  &:active {
+    transform: translateY(0);
+    background: #1EA850;
   }
 
   svg {

@@ -101,6 +101,11 @@ const categories = store.categories
   padding: 4rem 0 2rem;
   position: relative;
   
+  @media (max-width: 768px) {
+    padding: 3rem 0 2rem;
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px) + 80px); // 为底部导航栏预留空间
+  }
+  
   &::before {
     content: '';
     position: absolute;

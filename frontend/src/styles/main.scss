@@ -224,3 +224,63 @@ button {
   to { transform: rotate(360deg); }
 }
 
+// 移动端专用样式优化
+@media (max-width: 768px) {
+  // 确保所有页面都有底部padding，避免被底部导航栏遮挡
+  :deep(.home),
+  :deep(.category-page),
+  :deep(.search-page),
+  :deep(.cart-page),
+  :deep(.product-detail-page) {
+    padding-bottom: 6rem !important;
+  }
+
+  // 移动端字体大小优化
+  h1 {
+    font-size: 2rem !important;
+  }
+
+  h2 {
+    font-size: 1.75rem !important;
+  }
+
+  h3 {
+    font-size: 1.5rem !important;
+  }
+
+  // 移动端按钮优化
+  button,
+  .btn {
+    min-height: 44px; // 最小触摸目标
+  }
+
+  // 移动端输入框优化
+  input,
+  textarea,
+  select {
+    font-size: 16px !important; // 防止iOS自动缩放
+    min-height: 44px;
+  }
+}
+
+// 超小屏幕优化 (≤480px)
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.75rem !important;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+  }
+
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  // 更紧凑的间距
+  section {
+    padding: 2rem 0 !important;
+  }
+}
+

@@ -111,6 +111,10 @@ onMounted(async () => {
 .search-page {
   padding: 3rem 0 5rem;
   min-height: 60vh;
+
+  @media (max-width: 768px) {
+    padding-bottom: 6rem; // 为底部导航栏预留空间
+  }
 }
 
 .search-header {
@@ -151,6 +155,11 @@ onMounted(async () => {
   font-size: 1rem;
   outline: none;
   color: var(--text-primary);
+
+  @media (max-width: 768px) {
+    padding: 1rem 1.25rem;
+    font-size: 16px; // 防止iOS自动缩放
+  }
 
   &::placeholder {
     color: var(--text-light);
@@ -216,6 +225,11 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }
 
 .search-suggestions {

@@ -72,6 +72,11 @@ onMounted(async () => {
   padding: 6rem 0;
   position: relative;
   
+  @media (max-width: 768px) {
+    padding: 3rem 0;
+    padding-bottom: 5rem; // 为底部导航栏预留空间
+  }
+  
   &::before {
     content: '';
     position: absolute;
@@ -94,6 +99,14 @@ onMounted(async () => {
   font-weight: 700;
   letter-spacing: -0.02em;
   position: relative;
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.75rem;
+  }
   
   &::after {
     content: '';
@@ -141,6 +154,11 @@ onMounted(async () => {
   padding: 6rem 0;
   background: var(--accent-color);
   position: relative;
+  
+  @media (max-width: 768px) {
+    padding: 3rem 0;
+    padding-bottom: 5rem; // 为底部导航栏预留空间
+  }
   
   &::before {
     content: '';

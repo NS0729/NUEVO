@@ -243,6 +243,10 @@ const quickOrderWhatsApp = () => {
 <style lang="scss" scoped>
 .product-detail-page {
   padding: 3rem 0 5rem;
+
+  @media (max-width: 768px) {
+    padding-bottom: 6rem; // 为底部导航栏预留空间
+  }
 }
 
 .product-detail {
@@ -260,6 +264,10 @@ const quickOrderWhatsApp = () => {
   position: sticky;
   top: 100px;
   height: fit-content;
+
+  @media (max-width: 1023px) {
+    position: static;
+  }
 }
 
 .product-info {
@@ -294,6 +302,14 @@ const quickOrderWhatsApp = () => {
   line-height: 1.2;
   font-weight: 700;
   margin-bottom: 1rem;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.75rem;
+  }
 }
 
 .product-rating {
@@ -335,6 +351,14 @@ const quickOrderWhatsApp = () => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+
+  @media (max-width: 768px) {
+    font-size: 2.25rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 2rem;
+  }
 }
 
 .original-price {

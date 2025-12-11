@@ -61,6 +61,10 @@ onMounted(async () => {
 .category-page {
   padding: 3rem 0 5rem;
   min-height: 60vh;
+
+  @media (max-width: 768px) {
+    padding-bottom: 6rem; // 为底部导航栏预留空间
+  }
 }
 
 .page-header {
@@ -80,6 +84,16 @@ onMounted(async () => {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: 700;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.75rem;
+  }
 }
 
 .category-icon {
@@ -109,6 +123,11 @@ onMounted(async () => {
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 }
 

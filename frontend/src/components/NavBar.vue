@@ -115,6 +115,11 @@ const closeMobileMenu = () => {
   justify-content: space-between;
   padding: 1.25rem 0;
   gap: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem 0;
+    gap: 1rem;
+  }
 }
 
 .logo {
@@ -129,6 +134,19 @@ const closeMobileMenu = () => {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   transition: var(--transition-smooth);
+  
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+    gap: 0.375rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.1rem;
+    
+    .logo-text {
+      display: none; // 小屏幕只显示图标
+    }
+  }
   
   &:hover {
     transform: scale(1.05);
