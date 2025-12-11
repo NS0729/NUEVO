@@ -584,25 +584,48 @@ const onImageError = (e) => {
   }
 }
 
-@media (max-width: 768px) {
-  .product-actions {
-    flex-direction: column;
-  }
+  @media (max-width: 768px) {
+    .product-card {
+      &:active {
+        transform: scale(0.98);
+      }
+    }
 
-  .action-btn {
-    width: 100%;
-  }
+    .product-actions {
+      flex-direction: column;
+    }
 
-  .overlay-actions {
-    width: 100%;
-    padding: 0 1rem;
-  }
+    .action-btn {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1rem;
+      min-height: 48px; // 移动端最小触摸目标
+    }
 
-  .quick-view-btn,
-  .quick-order-btn {
-    width: 100%;
-    justify-content: center;
+    .overlay-actions {
+      width: 100%;
+      padding: 0 1rem;
+    }
+
+    .quick-view-btn,
+    .quick-order-btn {
+      width: 100%;
+      justify-content: center;
+      padding: 1rem;
+      min-height: 48px;
+    }
+
+    .product-info {
+      padding: 1.25rem;
+    }
+
+    .product-name {
+      font-size: 1.1rem;
+    }
+
+    .current-price {
+      font-size: 1.5rem;
+    }
   }
-}
 </style>
 

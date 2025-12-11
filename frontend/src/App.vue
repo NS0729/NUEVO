@@ -7,6 +7,7 @@
       </transition>
     </router-view>
     <Footer v-if="!isAdminRoute" />
+    <MobileBottomNav v-if="!isAdminRoute" />
     <Toast ref="toastRef" />
   </div>
 </template>
@@ -16,6 +17,7 @@ import { ref, computed, provide, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import NavBar from './components/NavBar.vue'
 import Footer from './components/Footer.vue'
+import MobileBottomNav from './components/MobileBottomNav.vue'
 import Toast from './components/Toast.vue'
 import { useJewelryStore } from './store'
 

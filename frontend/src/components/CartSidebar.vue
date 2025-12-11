@@ -231,6 +231,11 @@ const handleCheckout = () => {
   flex-direction: column;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
   border-left: 1px solid var(--border-color);
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    background: rgba(255, 255, 255, 0.98);
+  }
 }
 
 .cart-header {
@@ -301,10 +306,21 @@ const handleCheckout = () => {
   border-radius: 12px;
   border: 1px solid var(--border-color);
   transition: var(--transition);
+  position: relative;
+
+  @media (max-width: 768px) {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1rem 0.75rem;
+    gap: 0.75rem;
+  }
 
   &:hover {
     box-shadow: var(--shadow-sm);
     background: rgba(255, 255, 255, 0.25);
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 
@@ -419,9 +435,21 @@ const handleCheckout = () => {
   font-weight: 600;
   transition: var(--transition);
 
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 1.2rem;
+  }
+
   &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.3);
     color: #fff;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.9);
   }
 
   &:disabled {
@@ -540,11 +568,23 @@ const handleCheckout = () => {
   gap: 0.5rem;
   transition: var(--transition-smooth);
   box-shadow: var(--shadow-md);
+  min-height: 52px; // 移动端最小触摸目标
+
+  @media (max-width: 768px) {
+    padding: 1.25rem;
+    font-size: 1.15rem;
+    min-height: 56px;
+  }
 
   &:hover {
     background: #20BA5A;
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
+  }
+
+  &:active {
+    transform: translateY(0);
+    background: #1EA850;
   }
 
   svg {
