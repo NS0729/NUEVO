@@ -1,139 +1,138 @@
-# 精美首饰 App - 全栈应用
+# App de Joyería Elegante - Aplicación Full Stack
 
-一个专业精美的首饰展示应用，采用 Vue3 + Cloudflare Workers + D1 构建的全栈应用。
+Una aplicación profesional y elegante para exhibir joyería, construida con Vue3 + Cloudflare Workers + D1.
 
-## ✨ 功能特性
+## ✨ Características
 
-### 前端功能
-- 🎨 **精美UI设计** - 现代化的界面设计，优雅的视觉效果
-- 📱 **响应式布局** - 完美适配桌面端和移动端
-- 🖼️ **图片自动缩放/压缩** - 智能图片处理，优化加载性能
-- 🔍 **搜索功能** - 强大的商品搜索
-- 📂 **分类浏览** - 按分类浏览商品
-- 🛍️ **购物车** - 购物车功能（状态管理）
-- ⚡ **性能优化** - 懒加载、图片预加载等优化
-- 🎯 **路由导航** - Vue Router 单页应用
-- 💾 **状态管理** - Pinia 状态管理
-- 👨‍💼 **商家后台** - 完整的商品、订单、分类管理
+### Funcionalidades Frontend
+- 🎨 **Diseño UI Elegante** - Diseño de interfaz moderno con efectos visuales elegantes
+- 📱 **Diseño Responsivo** - Adaptación perfecta para escritorio y móvil
+- 🖼️ **Escalado/Compresión Automática de Imágenes** - Procesamiento inteligente de imágenes para optimizar el rendimiento de carga
+- 🔍 **Funcionalidad de Búsqueda** - Búsqueda potente de productos
+- 📂 **Navegación por Categorías** - Explorar productos por categoría
+- 🛍️ **Carrito de Compras** - Funcionalidad de carrito (gestión de estado)
+- ⚡ **Optimización de Rendimiento** - Carga diferida, precarga de imágenes y otras optimizaciones
+- 🎯 **Navegación por Rutas** - Aplicación de una sola página con Vue Router
+- 💾 **Gestión de Estado** - Gestión de estado con Pinia
+- 👨‍💼 **Panel de Administración** - Gestión completa de productos, pedidos y categorías
 
-### 后端功能
-- 🚀 **Cloudflare Workers** - 无服务器 API
-- 💾 **D1 数据库** - Cloudflare 的 SQLite 数据库
-- 🔐 **身份验证** - 商家后台登录认证
-- 📊 **RESTful API** - 完整的商品、订单、分类 API
-- 🔄 **数据库迁移** - 自动化数据库迁移
+### Funcionalidades Backend
+- 🚀 **Cloudflare Workers** - API sin servidor
+- 💾 **Base de Datos D1** - Base de datos SQLite de Cloudflare
+- 🔐 **Autenticación** - Autenticación de inicio de sesión del panel de administración
+- 📊 **API RESTful** - API completa para productos, pedidos y categorías
+- 🔄 **Migración de Base de Datos** - Migración automatizada de base de datos
 
-## 📁 项目结构
+## 📁 Estructura del Proyecto
 
 ```
 NUEVO/
-├── frontend/              # 前端项目 (Vue.js)
-│   ├── src/              # 前端源代码
-│   ├── index.html        # HTML 模板
-│   ├── vite.config.js    # Vite 配置
-│   └── package.json      # 前端依赖
+├── frontend/              # Proyecto frontend (Vue.js)
+│   ├── src/              # Código fuente frontend
+│   ├── index.html        # Plantilla HTML
+│   ├── vite.config.js    # Configuración de Vite
+│   └── package.json      # Dependencias frontend
 │
-├── backend/              # 后端项目 (Cloudflare Workers)
+├── backend/              # Proyecto backend (Cloudflare Workers)
 │   ├── src/
-│   │   └── index.js      # Worker 入口文件
-│   ├── migrations/       # 数据库迁移文件
-│   ├── wrangler.toml     # Wrangler 配置
-│   └── package.json      # 后端依赖
+│   │   └── index.js      # Archivo de entrada del Worker
+│   ├── migrations/       # Archivos de migración de base de datos
+│   ├── wrangler.toml     # Configuración de Wrangler
+│   └── package.json      # Dependencias backend
 │
-├── docs/                 # 项目文档
-├── scripts/              # 脚本文件
-└── package.json          # 根 package.json（workspace 管理）
+├── docs/                 # Documentación del proyecto
+├── scripts/              # Archivos de script
+└── package.json          # package.json raíz (gestión de workspace)
 ```
 
-详细的项目结构说明请查看 [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)
+Para una descripción detallada de la estructura del proyecto, consulte [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)
 
-## 🚀 快速开始
+## 🚀 Inicio Rápido
 
-### 安装依赖
+### Instalación de Dependencias
 
 ```bash
-# 安装所有依赖（根目录 + 前端 + 后端）
+# Instalar todas las dependencias (raíz + frontend + backend)
 npm run install:all
 
-# 或分别安装
-npm install                    # 根目录
-cd frontend && npm install     # 前端
-cd ../backend && npm install   # 后端
+# O instalar por separado
+npm install                    # Raíz
+cd frontend && npm install     # Frontend
+cd ../backend && npm install   # Backend
 ```
 
-### 开发模式
+### Modo de Desarrollo
 
 ```bash
-# 同时启动前端和后端
+# Iniciar frontend y backend simultáneamente
 npm run dev
 
-# 或分别启动
-npm run dev:frontend   # 前端 (http://localhost:3000)
-npm run dev:backend    # 后端 (http://localhost:8787)
+# O iniciar por separado
+npm run dev:frontend   # Frontend (http://localhost:3000)
+npm run dev:backend    # Backend (http://localhost:8787)
 ```
 
-### 构建
+### Construcción
 
 ```bash
-npm run build  # 构建前端
+npm run build  # Construir frontend
 ```
 
-## 🛠️ 技术栈
+## 🛠️ Stack Tecnológico
 
-### 前端
-- **Vue 3** - 渐进式JavaScript框架
-- **Vite** - 下一代前端构建工具
-- **Vue Router** - 官方路由管理器
-- **Pinia** - Vue的状态管理库
-- **SCSS** - CSS预处理器
+### Frontend
+- **Vue 3** - Framework JavaScript progresivo
+- **Vite** - Herramienta de construcción frontend de próxima generación
+- **Vue Router** - Administrador de rutas oficial
+- **Pinia** - Biblioteca de gestión de estado para Vue
+- **SCSS** - Preprocesador CSS
 
-### 后端
-- **Cloudflare Workers** - 无服务器运行环境
-- **Cloudflare D1** - SQLite 数据库
-- **Wrangler** - Cloudflare 开发工具
+### Backend
+- **Cloudflare Workers** - Entorno de ejecución sin servidor
+- **Cloudflare D1** - Base de datos SQLite
+- **Wrangler** - Herramienta de desarrollo de Cloudflare
 
-## 📝 开发说明
+## 📝 Instrucciones de Desarrollo
 
-### 前端开发
-- 前端代码位于 `frontend/` 目录
-- 开发服务器：`http://localhost:3000`
-- API 基础 URL：`http://localhost:8787`
+### Desarrollo Frontend
+- El código frontend se encuentra en el directorio `frontend/`
+- Servidor de desarrollo: `http://localhost:3000`
+- URL base de API: `http://localhost:8787`
 
-### 后端开发
-- 后端代码位于 `backend/` 目录
-- API 服务器：`http://localhost:8787`
-- 数据库迁移：`cd backend && npm run db:migrate`
-- 远程数据库迁移：`cd backend && npm run db:migrate:remote`
+### Desarrollo Backend
+- El código backend se encuentra en el directorio `backend/`
+- Servidor API: `http://localhost:8787`
+- Migración de base de datos: `cd backend && npm run db:migrate`
+- Migración de base de datos remota: `cd backend && npm run db:migrate:remote`
 
-### 商家后台
-- 访问地址：`http://localhost:3000/admin`
-- 默认账号：查看 `docs/ADMIN_GUIDE.md`
+### Panel de Administración
+- URL de acceso: `http://localhost:3000/admin`
+- Cuenta predeterminada: consulte `docs/ADMIN_GUIDE.md`
 
-## 📚 文档
+## 📚 Documentación
 
-所有文档位于 `docs/` 目录：
+Toda la documentación se encuentra en el directorio `docs/`:
 
-- [项目结构说明](docs/PROJECT_STRUCTURE.md)
-- [后端 API 文档](docs/README_BACKEND.md)
-- [商家后台指南](docs/ADMIN_GUIDE.md)
-- [GitHub 设置指南](docs/README_GITHUB.md)
-- [数据库设置指南](docs/DATABASE_GITHUB_SETUP.md)
+- [Descripción de la Estructura del Proyecto](docs/PROJECT_STRUCTURE.md)
+- [Documentación de API Backend](docs/README_BACKEND.md)
+- [Guía del Panel de Administración](docs/ADMIN_GUIDE.md)
+- [Guía de Configuración de GitHub](docs/README_GITHUB.md)
+- [Guía de Configuración de Base de Datos](docs/DATABASE_GITHUB_SETUP.md)
 
-## 🔧 环境变量
+## 🔧 Variables de Entorno
 
-### 前端
-创建 `frontend/.env`：
+### Frontend
+Crear `frontend/.env`:
 ```
 VITE_API_URL=http://localhost:8787
 ```
 
-### 后端
-创建 `backend/.dev.vars`（开发环境）：
+### Backend
+Crear `backend/.dev.vars` (entorno de desarrollo):
 ```
 ENVIRONMENT=development
 ```
 
-## 📄 许可证
+## 📄 Licencia
 
 MIT License
-

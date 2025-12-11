@@ -1,50 +1,50 @@
 /**
- * Store API 集成
- * 将 Pinia store 与后端 API 集成
+ * Integración de Store API
+ * Integrar Pinia store con la API del backend
  */
 import { productsAPI, categoriesAPI, ordersAPI } from '../api'
 
 export const apiStore = {
-  // 获取所有商品
+  // Obtener todos los productos
   async fetchProducts(params = {}) {
     try {
       const response = await productsAPI.getAll(params)
       return response.products || []
     } catch (error) {
-      console.error('获取商品失败:', error)
+      console.error('Error al obtener productos:', error)
       return []
     }
   },
 
-  // 获取单个商品
+  // Obtener un solo producto
   async fetchProduct(id) {
     try {
       const response = await productsAPI.getById(id)
       return response.product || null
     } catch (error) {
-      console.error('获取商品失败:', error)
+      console.error('Error al obtener producto:', error)
       return null
     }
   },
 
-  // 获取所有分类
+  // Obtener todas las categorías
   async fetchCategories() {
     try {
       const response = await categoriesAPI.getAll()
       return response.categories || []
     } catch (error) {
-      console.error('获取分类失败:', error)
+      console.error('Error al obtener categorías:', error)
       return []
     }
   },
 
-  // 创建订单
+  // Crear pedido
   async createOrder(orderData) {
     try {
       const response = await ordersAPI.create(orderData)
       return response
     } catch (error) {
-      console.error('创建订单失败:', error)
+      console.error('Error al crear pedido:', error)
       throw error
     }
   },

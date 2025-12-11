@@ -1,5 +1,5 @@
 /**
- * 横屏检测和响应式布局 Composable
+ * Composable de detección de orientación horizontal y diseño responsivo
  */
 import { ref, onMounted, onUnmounted } from 'vue'
 
@@ -13,10 +13,10 @@ export function useOrientation() {
     screenWidth.value = window.innerWidth
     screenHeight.value = window.innerHeight
     
-    // 检测是否为移动设备
+    // Detectar si es dispositivo móvil
     isMobile.value = window.innerWidth <= 768
     
-    // 检测横屏：宽度大于高度，或者使用 orientation API
+    // Detectar orientación horizontal: ancho mayor que alto, o usar API de orientación
     isLandscape.value = 
       window.innerWidth > window.innerHeight ||
       (window.orientation !== undefined && 
@@ -28,7 +28,7 @@ export function useOrientation() {
   }
 
   const handleOrientationChange = () => {
-    // 延迟检查，等待浏览器完成方向变化
+    // Retrasar verificación, esperar a que el navegador complete el cambio de orientación
     setTimeout(() => {
       checkOrientation()
     }, 100)

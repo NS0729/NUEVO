@@ -20,8 +20,8 @@
   <div v-else class="not-found">
     <div class="not-found-content">
       <h1>404</h1>
-      <p>商品未找到</p>
-      <router-link to="/" class="btn btn-primary">返回首页</router-link>
+      <p>{{ t('product.notFound') }}</p>
+      <router-link to="/" class="btn btn-primary">{{ t('product.backHome') }}</router-link>
     </div>
   </div>
 </template>
@@ -32,15 +32,17 @@ import { useRoute } from 'vue-router'
 import { useJewelryStore } from '../store'
 import { formatPrice } from '../utils/priceFormatter'
 import ImageGallery from '../components/ImageGallery.vue'
+import { useI18n } from '../i18n'
 
 const route = useRoute()
 const store = useJewelryStore()
+const { t } = useI18n()
 
 const product = computed(() => {
   return store.getProductById(route.params.id)
 })
 
-// 如果商品不存在，尝试从API加载
+// Si el producto no existe, intentar cargar desde la API
 onMounted(async () => {
   if (!product.value && !store.isLoading) {
     await store.loadProducts()
@@ -53,7 +55,7 @@ onMounted(async () => {
   padding: 3rem 0 5rem;
 
   @media (max-width: 768px) {
-    padding-bottom: 6rem; // 为底部导航栏预留空间
+    padding-bottom: 6rem; // Reservar espacio para la barra de navegación inferior
   }
 }
 

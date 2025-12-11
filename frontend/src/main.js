@@ -6,20 +6,24 @@ import './styles/main.scss'
 import { checkApiConnection, getApiBaseUrl } from './api'
 import { initMobileScale, detectDevice } from './utils/mobileScale'
 import { initViewportFix } from './utils/viewportFix'
+import { initI18n } from './i18n'
 
-// 在应用启动时检查API连接
+// Verificar conexión API al iniciar la aplicación
 async function initApp() {
-  // 初始化viewport修复（优先执行）
+  // Inicializar i18n (ejecutar primero)
+  initI18n()
+  
+  // Inicializar corrección de viewport
   initViewportFix()
   
-  // 初始化移动端自动缩放
+  // Inicializar escalado automático móvil
   const device = detectDevice()
   if (device.isMobile) {
     const cleanup = initMobileScale()
-    // 保存清理函数到window，以便需要时调用
+    // Guardar función de limpieza en window para llamarla cuando sea necesario
     window.__mobileScaleCleanup = cleanup
     
-    // 暴露工具函数到window（用于调试）
+    // Exponer funciones de utilidad a window (para depuración)
     window.__mobileUtils = {
       detectDevice,
       getCurrentScale: () => {
@@ -34,7 +38,7 @@ async function initApp() {
     }
     
     if (import.meta.env.DEV) {
-      console.log('📱 移动端设备检测:', {
+      console.log('📱 Detección de dispositivo móvil:', {
         isMobile: device.isMobile,
         isIOS: device.isIOS,
         isAndroid: device.isAndroid,
@@ -43,22 +47,22 @@ async function initApp() {
         devicePixelRatio: device.devicePixelRatio,
         scale: window.__mobileUtils.getCurrentScale()
       })
-      console.log('💡 使用 window.__mobileUtils 查看移动端工具函数')
+      console.log('💡 Usar window.__mobileUtils para ver funciones de utilidad móvil')
     }
   }
   
-  // 显示API配置信息（开发环境）
+  // Mostrar información de configuración API (entorno de desarrollo)
   if (import.meta.env.DEV) {
-    console.log('🚀 应用启动中...')
-    console.log('📡 API URL:', getApiBaseUrl())
+    console.log('🚀 Iniciando aplicación...')
+    console.log('📡 URL de API:', getApiBaseUrl())
     
-    // 检查API连接
+    // Verificar conexión API
     const connectionStatus = await checkApiConnection()
     if (connectionStatus.connected) {
-      console.log('✅ API连接正常:', connectionStatus.data)
+      console.log('✅ Conexión API normal:', connectionStatus.data)
     } else {
-      console.warn('⚠️ API连接失败:', connectionStatus.error)
-      console.warn('💡 请确保后端服务正在运行 (npm run dev in backend folder)')
+      console.warn('⚠️ Fallo en conexión API:', connectionStatus.error)
+      console.warn('💡 Asegúrese de que el servicio backend esté ejecutándose (npm run dev en la carpeta backend)')
     }
   }
 
@@ -68,11 +72,11 @@ async function initApp() {
   app.mount('#app')
   
   if (import.meta.env.DEV) {
-    console.log('✅ 应用已启动')
+    console.log('✅ Aplicación iniciada')
   }
 }
 
 initApp().catch(error => {
-  console.error('❌ 应用启动失败:', error)
+  console.error('❌ Error al iniciar la aplicación:', error)
 })
 

@@ -1,118 +1,117 @@
-# 精美首饰 App - Vue3 前端应用
+# App de Joyería Elegante - Aplicación Frontend Vue3
 
-一个专业精美的首饰展示应用，采用 Vue3 + Vite 构建，具有完善的功能和精美的UI设计。
+Una aplicación profesional y elegante para exhibir joyería, construida con Vue3 + Vite, con funcionalidades completas y diseño UI elegante.
 
-## ✨ 功能特性
+## ✨ Características
 
-- 🎨 **精美UI设计** - 现代化的界面设计，优雅的视觉效果
-- 📱 **响应式布局** - 完美适配桌面端和移动端
-- 🖼️ **图片自动缩放/压缩** - 智能图片处理，优化加载性能
-- 🔍 **搜索功能** - 强大的商品搜索
-- 📂 **分类浏览** - 按分类浏览商品
-- 🛍️ **购物车** - 购物车功能（状态管理）
-- ⚡ **性能优化** - 懒加载、图片预加载等优化
-- 🎯 **路由导航** - Vue Router 单页应用
-- 💾 **状态管理** - Pinia 状态管理
+- 🎨 **Diseño UI Elegante** - Diseño de interfaz moderno con efectos visuales elegantes
+- 📱 **Diseño Responsivo** - Adaptación perfecta para escritorio y móvil
+- 🖼️ **Escalado/Compresión Automática de Imágenes** - Procesamiento inteligente de imágenes para optimizar el rendimiento de carga
+- 🔍 **Funcionalidad de Búsqueda** - Búsqueda potente de productos
+- 📂 **Navegación por Categorías** - Explorar productos por categoría
+- 🛍️ **Carrito de Compras** - Funcionalidad de carrito (gestión de estado)
+- ⚡ **Optimización de Rendimiento** - Carga diferida, precarga de imágenes y otras optimizaciones
+- 🎯 **Navegación por Rutas** - Aplicación de una sola página con Vue Router
+- 💾 **Gestión de Estado** - Gestión de estado con Pinia
 
-## 🚀 快速开始
+## 🚀 Inicio Rápido
 
-### 安装依赖
+### Instalación de Dependencias
 
 ```bash
 npm install
 ```
 
-### 开发模式
+### Modo de Desarrollo
 
 ```bash
 npm run dev
 ```
 
-应用将在 `http://localhost:3000` 启动
+La aplicación se iniciará en `http://localhost:3000`
 
-### 构建生产版本
+### Construcción para Producción
 
 ```bash
 npm run build
 ```
 
-### 预览生产版本
+### Vista Previa de Producción
 
 ```bash
 npm run preview
 ```
 
-## 📁 项目结构
+## 📁 Estructura del Proyecto
 
 ```
 src/
-├── components/          # 组件
-│   ├── NavBar.vue      # 导航栏
-│   ├── Footer.vue      # 页脚
-│   ├── ProductCard.vue # 商品卡片
-│   └── ImageGallery.vue # 图片画廊
-├── views/              # 页面
-│   ├── Home.vue        # 首页
-│   ├── Category.vue    # 分类页
-│   ├── ProductDetail.vue # 商品详情
-│   └── Search.vue      # 搜索页
-├── store/              # 状态管理
-│   └── index.js        # Pinia store
-├── router/             # 路由配置
+├── components/          # Componentes
+│   ├── NavBar.vue      # Barra de navegación
+│   ├── Footer.vue      # Pie de página
+│   ├── ProductCard.vue # Tarjeta de producto
+│   └── ImageGallery.vue # Galería de imágenes
+├── views/              # Páginas
+│   ├── Home.vue        # Página de inicio
+│   ├── Category.vue    # Página de categoría
+│   ├── ProductDetail.vue # Detalles del producto
+│   └── Search.vue      # Página de búsqueda
+├── store/              # Gestión de estado
+│   └── index.js        # Store de Pinia
+├── router/             # Configuración de rutas
 │   └── index.js
-├── utils/              # 工具函数
-│   └── imageProcessor.js # 图片处理工具
-├── styles/             # 样式文件
-│   └── main.scss       # 主样式
-└── main.js             # 入口文件
+├── utils/              # Funciones de utilidad
+│   └── imageProcessor.js # Herramienta de procesamiento de imágenes
+├── styles/             # Archivos de estilo
+│   └── main.scss       # Estilo principal
+└── main.js             # Archivo de entrada
 ```
 
-## 🛠️ 技术栈
+## 🛠️ Stack Tecnológico
 
-- **Vue 3** - 渐进式JavaScript框架
-- **Vite** - 下一代前端构建工具
-- **Vue Router** - 官方路由管理器
-- **Pinia** - Vue的状态管理库
-- **SCSS** - CSS预处理器
+- **Vue 3** - Framework JavaScript progresivo
+- **Vite** - Herramienta de construcción frontend de próxima generación
+- **Vue Router** - Administrador de rutas oficial
+- **Pinia** - Biblioteca de gestión de estado para Vue
+- **SCSS** - Preprocesador CSS
 
-## 🎨 图片处理功能
+## 🎨 Funcionalidad de Procesamiento de Imágenes
 
-应用内置了完善的图片处理工具 (`src/utils/imageProcessor.js`)：
+La aplicación incluye herramientas completas de procesamiento de imágenes (`src/utils/imageProcessor.js`):
 
-- **图片压缩** - 自动压缩图片，优化文件大小
-- **响应式图片** - 根据设备自动加载合适尺寸
-- **懒加载** - 图片懒加载，提升性能
-- **预加载** - 关键图片预加载
+- **Compresión de Imágenes** - Comprimir imágenes automáticamente para optimizar el tamaño del archivo
+- **Imágenes Responsivas** - Cargar automáticamente el tamaño adecuado según el dispositivo
+- **Carga Diferida** - Carga diferida de imágenes para mejorar el rendimiento
+- **Precarga** - Precarga de imágenes clave
 
-## 📱 响应式设计
+## 📱 Diseño Responsivo
 
-- 移动端优先设计
-- 断点：768px (平板), 1024px (桌面)
-- 自适应网格布局
-- 触摸友好的交互
+- Diseño móvil primero
+- Puntos de quiebre: 768px (tablet), 1024px (escritorio)
+- Diseño de cuadrícula adaptable
+- Interacciones táctiles amigables
 
-## 🎯 主要页面
+## 🎯 Páginas Principales
 
-1. **首页** - 展示精选商品和分类
-2. **分类页** - 按分类浏览商品
-3. **商品详情** - 详细的商品信息和图片画廊
-4. **搜索页** - 商品搜索功能
+1. **Página de Inicio** - Exhibir productos destacados y categorías
+2. **Página de Categoría** - Explorar productos por categoría
+3. **Detalles del Producto** - Información detallada del producto y galería de imágenes
+4. **Página de Búsqueda** - Funcionalidad de búsqueda de productos
 
-## 📝 开发说明
+## 📝 Instrucciones de Desarrollo
 
-### 添加新商品
+### Agregar Nuevos Productos
 
-在 `src/store/index.js` 的 `products` 数组中添加新商品对象。
+Agregar nuevos objetos de producto en el array `products` de `src/store/index.js`.
 
-### 自定义样式
+### Personalizar Estilos
 
-修改 `src/styles/main.scss` 中的CSS变量来自定义主题色。
+Modificar las variables CSS en `src/styles/main.scss` para personalizar los colores del tema.
 
-### 图片处理
+### Procesamiento de Imágenes
 
-使用 `src/utils/imageProcessor.js` 中的工具函数处理图片。
+Usar las funciones de utilidad en `src/utils/imageProcessor.js` para procesar imágenes.
 
-## 📄 许可证
+## 📄 Licencia
 
 MIT License
-

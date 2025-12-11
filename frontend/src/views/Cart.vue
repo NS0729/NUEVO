@@ -2,16 +2,16 @@
   <div class="cart-page">
     <div class="container">
       <div class="page-header">
-        <h1 class="page-title">🛒 我的购物车</h1>
-        <p class="page-subtitle">查看和管理您的购物车商品</p>
+        <h1 class="page-title">🛒 {{ t('cart.title') }}</h1>
+        <p class="page-subtitle">{{ t('cart.emptyDesc') }}</p>
       </div>
 
       <div v-if="cart.length === 0" class="empty-cart">
         <div class="empty-icon">🛒</div>
-        <h2>购物车是空的</h2>
-        <p>快去挑选您喜欢的商品吧！</p>
+        <h2>{{ t('cart.empty') }}</h2>
+        <p>{{ t('cart.emptyDesc') }}</p>
         <router-link to="/" class="btn btn-primary">
-          去购物
+          {{ t('cart.goShopping') }}
         </router-link>
       </div>
 
@@ -19,9 +19,9 @@
         <div class="cart-main">
           <div class="cart-items-section">
             <div class="section-header">
-              <h2 class="section-title">商品列表</h2>
+              <h2 class="section-title">{{ t('cart.items') }}</h2>
               <button class="clear-cart-btn" @click="clearCart">
-                清空购物车
+                {{ t('cart.clear') }}
               </button>
             </div>
 
@@ -50,7 +50,7 @@
 
                   <div class="item-pricing">
                     <div class="price-row">
-                      <span class="price-label">单价：</span>
+                      <span class="price-label">{{ t('common.price') }}:</span>
                       <div class="price-group">
                         <span class="item-price">{{ formatPrice(item.price) }}</span>
                         <span v-if="item.originalPrice" class="item-original-price">
@@ -60,7 +60,7 @@
                     </div>
                     
                     <div class="quantity-row">
-                      <span class="price-label">数量：</span>
+                      <span class="price-label">{{ t('common.quantity') }}:</span>
                       <div class="item-quantity-controls">
                         <button
                           class="qty-btn"
@@ -77,18 +77,18 @@
                     </div>
 
                     <div class="subtotal-row">
-                      <span class="price-label">小计：</span>
+                      <span class="price-label">{{ t('cart.subtotal') }}:</span>
                       <div class="subtotal-group">
                         <span class="item-subtotal">{{ formatPrice(getItemSubtotal(item)) }}</span>
                         <span v-if="item.originalPrice" class="item-savings">
-                          节省 {{ formatPrice(getItemSavings(item)) }}
+                          {{ t('cart.itemRemoved') }} {{ formatPrice(getItemSavings(item)) }}
                         </span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <button class="remove-btn" @click="removeItem(item.id)" title="删除商品">
+                <button class="remove-btn" @click="removeItem(item.id)" :title="t('cart.remove')">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -100,27 +100,22 @@
 
           <div class="cart-summary-section">
             <div class="summary-card">
-              <h2 class="summary-title">订单汇总</h2>
+              <h2 class="summary-title">{{ t('cart.total') }}</h2>
               
               <div class="summary-content">
                 <div class="summary-row">
-                  <span class="summary-label">商品数量</span>
-                  <span class="summary-value">{{ totalItems }} 件</span>
+                  <span class="summary-label">{{ t('cart.items') }}</span>
+                  <span class="summary-value">{{ totalItems }} {{ t('cart.item') }}</span>
                 </div>
                 
                 <div v-if="totalSavings > 0" class="summary-row savings-row">
-                  <span class="summary-label">已节省</span>
+                  <span class="summary-label">{{ t('cart.itemRemoved') }}</span>
                   <span class="summary-value savings">-{{ formatPrice(totalSavings) }}</span>
-                </div>
-                
-                <div v-if="originalTotal > cartTotal" class="summary-row">
-                  <span class="summary-label">原价合计</span>
-                  <span class="summary-value original-total">{{ formatPrice(originalTotal) }}</span>
                 </div>
               </div>
 
               <div class="total-section">
-                <span class="total-label">订单总额</span>
+                <span class="total-label">{{ t('cart.total') }}</span>
                 <span class="total-amount">{{ formatPrice(cartTotal) }}</span>
               </div>
 
@@ -128,23 +123,8 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                 </svg>
-                发送订单到WhatsApp
+                {{ t('cart.checkout') }}
               </button>
-
-              <div class="checkout-features">
-                <div class="feature-item">
-                  <span class="feature-icon">🚚</span>
-                  <span>免费配送</span>
-                </div>
-                <div class="feature-item">
-                  <span class="feature-icon">🔒</span>
-                  <span>正品保证</span>
-                </div>
-                <div class="feature-item">
-                  <span class="feature-icon">↩️</span>
-                  <span>7天退换</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -159,17 +139,19 @@ import { useRouter } from 'vue-router'
 import { useJewelryStore } from '../store'
 import { sendOrderToWhatsApp } from '../utils/whatsapp'
 import { formatPrice } from '../utils/priceFormatter'
+import { useI18n } from '../i18n'
 
 const router = useRouter()
 const store = useJewelryStore()
+const { t } = useI18n()
 const cart = store.cart
 const cartTotal = store.cartTotal
 
-// WhatsApp电话号码配置
+// Configuración de número de teléfono WhatsApp
 const whatsappPhone = import.meta.env.VITE_WHATSAPP_PHONE || '8613800138000'
 
 
-// 计算折扣百分比
+// Calcular porcentaje de descuento
 const getDiscountPercent = (item) => {
   if (!item.originalPrice) return 0
   return Math.round(
@@ -177,23 +159,23 @@ const getDiscountPercent = (item) => {
   )
 }
 
-// 计算单个商品的小计
+// Calcular subtotal de un solo producto
 const getItemSubtotal = (item) => {
   return item.price * item.quantity
 }
 
-// 计算单个商品的节省金额
+// Calcular ahorro de un solo producto
 const getItemSavings = (item) => {
   if (!item.originalPrice) return 0
   return (item.originalPrice - item.price) * item.quantity
 }
 
-// 计算商品总数
+// Calcular total de productos
 const totalItems = computed(() => {
   return cart.reduce((sum, item) => sum + item.quantity, 0)
 })
 
-// 计算总节省金额
+// Calcular ahorro total
 const totalSavings = computed(() => {
   return cart.reduce((sum, item) => {
     if (item.originalPrice) {
@@ -203,7 +185,7 @@ const totalSavings = computed(() => {
   }, 0)
 })
 
-// 计算原价合计
+// Calcular total de precio original
 const originalTotal = computed(() => {
   return cart.reduce((sum, item) => {
     const originalPrice = item.originalPrice || item.price
@@ -227,20 +209,20 @@ const decreaseQuantity = (productId) => {
 
 const removeItem = (productId) => {
   const toast = inject('toast', null)
-  if (confirm('确定要删除这个商品吗？')) {
+  if (confirm(t('cart.confirmClear'))) {
     store.removeFromCart(productId)
     if (toast) {
-      toast.success('商品已从购物车移除')
+      toast.success(t('cart.itemRemoved'))
     }
   }
 }
 
 const clearCart = () => {
   const toast = inject('toast', null)
-  if (confirm('确定要清空购物车吗？')) {
+  if (confirm(t('cart.confirmClear'))) {
     cart.forEach(item => store.removeFromCart(item.id))
     if (toast) {
-      toast.success('购物车已清空')
+      toast.success(t('cart.cartCleared'))
     }
   }
 }
@@ -249,22 +231,18 @@ const handleCheckout = () => {
   const toast = inject('toast', null)
   if (cart.length === 0) {
     if (toast) {
-      toast.error('购物车为空')
+      toast.error(t('cart.empty'))
     } else {
-      alert('购物车为空')
+      alert(t('cart.empty'))
     }
     return
   }
 
-  const customerInfo = {
-    // name: '客户姓名',
-    // phone: '客户电话',
-    // address: '客户地址'
-  }
+  const customerInfo = {}
 
   sendOrderToWhatsApp(whatsappPhone, cart, cartTotal, customerInfo)
   if (toast) {
-    toast.success('订单已发送到WhatsApp')
+    toast.success(t('messages.orderPlaced'))
   }
 }
 </script>
@@ -275,7 +253,7 @@ const handleCheckout = () => {
   min-height: 60vh;
 
   @media (max-width: 768px) {
-    padding-bottom: 6rem; // 为底部导航栏预留空间
+    padding-bottom: 6rem; // Reservar espacio para la barra de navegación inferior
   }
 }
 

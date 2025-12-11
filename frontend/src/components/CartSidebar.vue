@@ -3,7 +3,7 @@
     <div v-if="isOpen" class="cart-sidebar-overlay" @click="closeCart">
       <div class="cart-sidebar" @click.stop>
         <div class="cart-header">
-          <h2 class="cart-title">购物车</h2>
+          <h2 class="cart-title">{{ t('cart.title') }}</h2>
           <button class="close-btn" @click="closeCart">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -15,9 +15,9 @@
         <div class="cart-content">
           <div v-if="cart.length === 0" class="empty-cart">
             <div class="empty-icon">🛒</div>
-            <p>购物车是空的</p>
+            <p>{{ t('cart.empty') }}</p>
             <router-link to="/" class="btn btn-primary" @click="closeCart">
-              去购物
+              {{ t('cart.goShopping') }}
             </router-link>
           </div>
 
@@ -33,7 +33,7 @@
                 <p class="item-spec">{{ item.material }} · {{ item.stone }}</p>
                 <div class="item-price-info">
                   <div class="price-row">
-                    <span class="price-label">单价：</span>
+                    <span class="price-label">{{ t('common.price') }}:</span>
                     <div class="price-group">
                       <span class="item-price">{{ formatPrice(item.price) }}</span>
                       <span v-if="item.originalPrice" class="item-original-price">
@@ -42,7 +42,7 @@
                     </div>
                   </div>
                   <div class="price-row">
-                    <span class="price-label">数量：</span>
+                    <span class="price-label">{{ t('common.quantity') }}:</span>
                     <div class="item-quantity-controls">
                       <button
                         class="qty-btn"
@@ -58,11 +58,11 @@
                     </div>
                   </div>
                   <div class="price-row subtotal-row">
-                    <span class="price-label">小计：</span>
+                    <span class="price-label">{{ t('cart.subtotal') }}:</span>
                     <div class="subtotal-group">
                       <span class="item-subtotal">{{ formatPrice(getItemSubtotal(item)) }}</span>
                       <span v-if="item.originalPrice" class="item-savings">
-                        节省 {{ formatPrice(getItemSavings(item)) }}
+                        {{ t('cart.itemRemoved') }} {{ formatPrice(getItemSavings(item)) }}
                       </span>
                     </div>
                   </div>
@@ -81,27 +81,23 @@
         <div v-if="cart.length > 0" class="cart-footer">
           <div class="cart-summary">
             <div class="summary-row">
-              <span class="summary-label">商品数量：</span>
-              <span class="summary-value">{{ totalItems }} 件</span>
+              <span class="summary-label">{{ t('cart.items') }}:</span>
+              <span class="summary-value">{{ totalItems }} {{ t('cart.item') }}</span>
             </div>
             <div v-if="totalSavings > 0" class="summary-row savings-row">
-              <span class="summary-label">已节省：</span>
+              <span class="summary-label">{{ t('cart.itemRemoved') }}:</span>
               <span class="summary-value savings">-{{ formatPrice(totalSavings) }}</span>
-            </div>
-            <div v-if="originalTotal > cartTotal" class="summary-row">
-              <span class="summary-label">原价合计：</span>
-              <span class="summary-value original-total">{{ formatPrice(originalTotal) }}</span>
             </div>
           </div>
           <div class="cart-total">
-            <span class="total-label">订单总额：</span>
+            <span class="total-label">{{ t('cart.total') }}:</span>
             <span class="total-amount">{{ formatPrice(cartTotal) }}</span>
           </div>
           <button class="btn-checkout" @click="handleCheckout">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
             </svg>
-            发送订单到WhatsApp
+            {{ t('cart.checkout') }}
           </button>
         </div>
       </div>
@@ -114,6 +110,7 @@ import { computed } from 'vue'
 import { useJewelryStore } from '../store'
 import { sendOrderToWhatsApp } from '../utils/whatsapp'
 import { formatPrice } from '../utils/priceFormatter'
+import { useI18n } from '../i18n'
 
 const props = defineProps({
   isOpen: {
@@ -125,31 +122,32 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const store = useJewelryStore()
+const { t } = useI18n()
 const cart = store.cart
 const cartTotal = store.cartTotal
 
-// WhatsApp电话号码配置
-// 格式：国家代码+号码（不含+号），例如：8613800138000（中国）
+// Configuración de número de teléfono WhatsApp
+// Formato: código de país + número (sin signo +), por ejemplo: 8613800138000 (China)
 const whatsappPhone = import.meta.env.VITE_WHATSAPP_PHONE || '8613800138000'
 
 
-// 计算单个商品的小计
+// Calcular subtotal de un solo producto
 const getItemSubtotal = (item) => {
   return item.price * item.quantity
 }
 
-// 计算单个商品的节省金额
+// Calcular ahorro de un solo producto
 const getItemSavings = (item) => {
   if (!item.originalPrice) return 0
   return (item.originalPrice - item.price) * item.quantity
 }
 
-// 计算商品总数
+// Calcular total de productos
 const totalItems = computed(() => {
   return cart.reduce((sum, item) => sum + item.quantity, 0)
 })
 
-// 计算总节省金额
+// Calcular ahorro total
 const totalSavings = computed(() => {
   return cart.reduce((sum, item) => {
     if (item.originalPrice) {
@@ -159,7 +157,7 @@ const totalSavings = computed(() => {
   }, 0)
 })
 
-// 计算原价合计
+// Calcular total de precio original
 const originalTotal = computed(() => {
   return cart.reduce((sum, item) => {
     const originalPrice = item.originalPrice || item.price
@@ -191,22 +189,15 @@ const closeCart = () => {
 
 const handleCheckout = () => {
   if (cart.length === 0) {
-    alert('购物车为空')
+    alert(t('cart.empty'))
     return
   }
 
-  // 可以在这里添加客户信息收集
-  const customerInfo = {
-    // name: '客户姓名',
-    // phone: '客户电话',
-    // address: '客户地址'
-  }
+  // Se puede agregar recolección de información del cliente aquí
+  const customerInfo = {}
 
-  // 发送订单到WhatsApp
+  // Enviar pedido a WhatsApp
   sendOrderToWhatsApp(whatsappPhone, cart, cartTotal, customerInfo)
-  
-  // 可选：清空购物车
-  // cart.forEach(item => store.removeFromCart(item.id))
 }
 </script>
 
@@ -568,7 +559,7 @@ const handleCheckout = () => {
   gap: 0.5rem;
   transition: var(--transition-smooth);
   box-shadow: var(--shadow-md);
-  min-height: 52px; // 移动端最小触摸目标
+  min-height: 52px; // Objetivo táctil mínimo para móvil
 
   @media (max-width: 768px) {
     padding: 1.25rem;

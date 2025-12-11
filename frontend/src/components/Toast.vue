@@ -47,7 +47,7 @@ const removeToast = (id) => {
   }
 }
 
-// 暴露方法供外部调用
+// Exponer métodos para llamadas externas
 defineExpose({
   success: (message, duration) => addToast(message, 'success', duration),
   error: (message, duration) => addToast(message, 'error', duration),

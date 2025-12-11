@@ -1,15 +1,15 @@
 <template>
   <div class="orders-management">
     <div class="management-header">
-      <h2>订单管理</h2>
+      <h2>{{ t('admin.orders.title') }}</h2>
       <div class="filter-group">
         <select v-model="statusFilter" class="filter-select">
-          <option value="">全部状态</option>
-          <option value="pending">待处理</option>
-          <option value="confirmed">已确认</option>
-          <option value="shipped">已发货</option>
-          <option value="completed">已完成</option>
-          <option value="cancelled">已取消</option>
+          <option value="">{{ t('common.all') }}</option>
+          <option value="pending">{{ t('admin.orders.status.pending') }}</option>
+          <option value="confirmed">{{ t('admin.orders.status.confirmed') }}</option>
+          <option value="shipped">{{ t('admin.orders.status.shipped') }}</option>
+          <option value="completed">{{ t('admin.orders.status.completed') }}</option>
+          <option value="cancelled">{{ t('admin.orders.status.cancelled') }}</option>
         </select>
       </div>
     </div>
@@ -17,13 +17,13 @@
     <div class="orders-list">
       <div v-if="filteredOrders.length === 0" class="empty-state">
         <div class="empty-icon">📦</div>
-        <p>暂无订单</p>
+        <p>{{ t('admin.orders.empty') }}</p>
       </div>
 
       <div v-for="order in filteredOrders" :key="order.id" class="order-card">
         <div class="order-header">
           <div class="order-info">
-            <span class="order-id">订单 #{{ order.id }}</span>
+            <span class="order-id">{{ t('admin.orders.orderId') }} #{{ order.id }}</span>
             <span class="order-date">{{ formatDate(order.createdAt) }}</span>
           </div>
           <div class="order-status">
@@ -32,20 +32,20 @@
               @change="updateOrderStatus(order.id, $event.target.value)"
               class="status-select"
             >
-              <option value="pending">待处理</option>
-              <option value="confirmed">已确认</option>
-              <option value="shipped">已发货</option>
-              <option value="completed">已完成</option>
-              <option value="cancelled">已取消</option>
+              <option value="pending">{{ t('admin.orders.status.pending') }}</option>
+              <option value="confirmed">{{ t('admin.orders.status.confirmed') }}</option>
+              <option value="shipped">{{ t('admin.orders.status.shipped') }}</option>
+              <option value="completed">{{ t('admin.orders.status.completed') }}</option>
+              <option value="cancelled">{{ t('admin.orders.status.cancelled') }}</option>
             </select>
           </div>
         </div>
 
         <div class="order-customer">
           <div class="customer-info">
-            <span><strong>客户:</strong> {{ order.customerName || '未填写' }}</span>
-            <span><strong>电话:</strong> {{ order.customerPhone || '未填写' }}</span>
-            <span><strong>地址:</strong> {{ order.customerAddress || '未填写' }}</span>
+            <span><strong>{{ t('admin.orders.customer') }}:</strong> {{ order.customerName || '-' }}</span>
+            <span><strong>{{ t('admin.orders.phone') }}:</strong> {{ order.customerPhone || '-' }}</span>
+            <span><strong>{{ t('admin.orders.address') }}:</strong> {{ order.customerAddress || '-' }}</span>
           </div>
         </div>
 
@@ -63,7 +63,7 @@
 
         <div class="order-footer">
           <div class="order-total">
-            <strong>订单总额: ${{ formatPrice(order.total) }}</strong>
+            <strong>{{ t('admin.orders.total') }}: ${{ formatPrice(order.total) }}</strong>
           </div>
         </div>
       </div>
@@ -76,8 +76,10 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { ordersAPI } from '../../api'
 import { formatPrice } from '../../utils/priceFormatter'
 import { useToast } from '../../composables/useToast'
+import { useI18n } from '../../i18n'
 
 const toast = useToast()
+const { t } = useI18n()
 
 const orders = ref([])
 const statusFilter = ref('')
@@ -90,7 +92,7 @@ const filteredOrders = computed(() => {
 const formatDate = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
-  return date.toLocaleString('zh-CN')
+  return date.toLocaleString('es-ES')
 }
 
 const loadOrders = async () => {
@@ -102,7 +104,7 @@ const loadOrders = async () => {
     const response = await ordersAPI.getAll(params)
     orders.value = response.orders || []
   } catch (error) {
-    console.error('加载订单失败:', error)
+    console.error('Error al cargar pedidos:', error)
     orders.value = []
   }
 }
@@ -110,21 +112,21 @@ const loadOrders = async () => {
 const updateOrderStatus = async (orderId, newStatus) => {
   try {
     await ordersAPI.updateStatus(orderId, newStatus)
-    // 更新本地订单状态
+    // Actualizar estado del pedido localmente
     const order = orders.value.find(o => o.id === orderId)
     if (order) {
       order.status = newStatus
     }
-    toast.success('订单状态已更新')
+    toast.success(t('admin.orders.statusUpdated'))
   } catch (error) {
-    console.error('更新订单状态失败:', error)
-    toast.error(error.message || '更新失败')
-    // 重新加载订单以恢复原状态
+    console.error('Error al actualizar estado del pedido:', error)
+    toast.error(error.message || t('common.error'))
+    // Recargar pedidos para restaurar el estado original
     loadOrders()
   }
 }
 
-// 监听状态筛选变化，重新加载订单
+// Observar cambios en el filtro de estado, recargar pedidos
 watch(statusFilter, () => {
   loadOrders()
 })

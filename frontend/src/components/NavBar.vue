@@ -4,7 +4,7 @@
       <div class="navbar-content">
         <router-link to="/" class="logo">
           <span class="logo-icon">💎</span>
-          <span class="logo-text">精美首饰</span>
+          <span class="logo-text">{{ t('home.title') }}</span>
         </router-link>
 
         <div class="nav-links">
@@ -38,7 +38,7 @@
             class="menu-btn" 
             :class="{ active: mobileMenuOpen }"
             @click="toggleMobileMenu"
-            aria-label="菜单"
+            :aria-label="t('nav.home')"
           >
             <span></span>
             <span></span>
@@ -48,7 +48,7 @@
       </div>
     </div>
 
-    <!-- 移动端菜单 -->
+    <!-- Menú móvil -->
     <transition name="slide">
       <div v-if="mobileMenuOpen" class="mobile-menu">
         <router-link 
@@ -70,9 +70,11 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useJewelryStore } from '../store'
+import { useI18n } from '../i18n'
 
 const router = useRouter()
 const store = useJewelryStore()
+const { t } = useI18n()
 
 
 const categories = store.categories
@@ -144,7 +146,7 @@ const closeMobileMenu = () => {
     font-size: 1.1rem;
     
     .logo-text {
-      display: none; // 小屏幕只显示图标
+      display: none; // Solo mostrar icono en pantallas pequeñas
     }
   }
   

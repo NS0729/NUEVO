@@ -1,11 +1,11 @@
 /**
- * 安全工具函数
+ * Funciones de utilidad de seguridad
  */
 
 /**
- * 转义HTML，防止XSS攻击
- * @param {string} str - 要转义的字符串
- * @returns {string} 转义后的字符串
+ * Escapar HTML, prevenir ataques XSS
+ * @param {string} str - Cadena a escapar
+ * @returns {string} Cadena escapada
  */
 export function escapeHtml(str) {
   if (!str) return ''
@@ -20,9 +20,9 @@ export function escapeHtml(str) {
 }
 
 /**
- * 验证邮箱格式
- * @param {string} email - 邮箱地址
- * @returns {boolean} 是否有效
+ * Validar formato de correo electrónico
+ * @param {string} email - Dirección de correo electrónico
+ * @returns {boolean} Si es válido
  */
 export function isValidEmail(email) {
   if (!email) return false
@@ -31,21 +31,21 @@ export function isValidEmail(email) {
 }
 
 /**
- * 验证密码强度
- * @param {string} password - 密码
+ * Validar fortaleza de contraseña
+ * @param {string} password - Contraseña
  * @returns {Object} {valid: boolean, strength: string, message: string}
  */
 export function validatePassword(password) {
   if (!password) {
-    return { valid: false, strength: 'weak', message: '密码不能为空' }
+    return { valid: false, strength: 'weak', message: 'La contraseña no puede estar vacía' }
   }
 
   if (password.length < 6) {
-    return { valid: false, strength: 'weak', message: '密码长度至少6位' }
+    return { valid: false, strength: 'weak', message: 'La contraseña debe tener al menos 6 caracteres' }
   }
 
   if (password.length < 8) {
-    return { valid: true, strength: 'weak', message: '密码强度：弱' }
+    return { valid: true, strength: 'weak', message: 'Fortaleza de contraseña: Débil' }
   }
 
   const hasUpper = /[A-Z]/.test(password)
@@ -56,44 +56,44 @@ export function validatePassword(password) {
   const strengthCount = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length
 
   if (strengthCount < 2) {
-    return { valid: true, strength: 'weak', message: '密码强度：弱' }
+    return { valid: true, strength: 'weak', message: 'Fortaleza de contraseña: Débil' }
   } else if (strengthCount < 3) {
-    return { valid: true, strength: 'medium', message: '密码强度：中' }
+    return { valid: true, strength: 'medium', message: 'Fortaleza de contraseña: Media' }
   } else {
-    return { valid: true, strength: 'strong', message: '密码强度：强' }
+    return { valid: true, strength: 'strong', message: 'Fortaleza de contraseña: Fuerte' }
   }
 }
 
 /**
- * 验证用户名格式
- * @param {string} username - 用户名
+ * Validar formato de nombre de usuario
+ * @param {string} username - Nombre de usuario
  * @returns {Object} {valid: boolean, message: string}
  */
 export function validateUsername(username) {
   if (!username) {
-    return { valid: false, message: '用户名不能为空' }
+    return { valid: false, message: 'El nombre de usuario no puede estar vacío' }
   }
 
   if (username.length < 3) {
-    return { valid: false, message: '用户名长度至少3位' }
+    return { valid: false, message: 'El nombre de usuario debe tener al menos 3 caracteres' }
   }
 
   if (username.length > 20) {
-    return { valid: false, message: '用户名长度不能超过20位' }
+    return { valid: false, message: 'El nombre de usuario no puede tener más de 20 caracteres' }
   }
 
   const usernameRegex = /^[a-zA-Z0-9_]+$/
   if (!usernameRegex.test(username)) {
-    return { valid: false, message: '用户名只能包含字母、数字和下划线' }
+    return { valid: false, message: 'El nombre de usuario solo puede contener letras, números y guiones bajos' }
   }
 
   return { valid: true, message: '' }
 }
 
 /**
- * 生成安全的随机token
- * @param {number} length - token长度
- * @returns {string} 随机token
+ * Generar token aleatorio seguro
+ * @param {number} length - Longitud del token
+ * @returns {string} Token aleatorio
  */
 export function generateToken(length = 32) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -109,9 +109,9 @@ export function generateToken(length = 32) {
 }
 
 /**
- * 简单的密码哈希（实际生产环境应使用bcrypt等）
- * @param {string} password - 密码
- * @returns {string} 哈希后的密码
+ * Hash simple de contraseña (en producción se debe usar bcrypt u otros)
+ * @param {string} password - Contraseña
+ * @returns {string} Contraseña hasheada
  */
 export async function hashPassword(password) {
   const encoder = new TextEncoder()
@@ -123,9 +123,9 @@ export async function hashPassword(password) {
 }
 
 /**
- * 验证输入是否包含SQL注入特征
- * @param {string} input - 输入字符串
- * @returns {boolean} 是否安全
+ * Verificar si la entrada contiene características de inyección SQL
+ * @param {string} input - Cadena de entrada
+ * @returns {boolean} Si es seguro
  */
 export function isSqlInjectionSafe(input) {
   if (!input) return true
@@ -141,30 +141,30 @@ export function isSqlInjectionSafe(input) {
 }
 
 /**
- * 清理用户输入
- * @param {string} input - 用户输入
- * @returns {string} 清理后的字符串
+ * Limpiar entrada del usuario
+ * @param {string} input - Entrada del usuario
+ * @returns {string} Cadena limpiada
  */
 export function sanitizeInput(input) {
   if (!input) return ''
   
-  // 移除HTML标签
+  // Eliminar etiquetas HTML
   let cleaned = String(input).replace(/<[^>]*>/g, '')
   
-  // 移除危险字符
+  // Eliminar caracteres peligrosos
   cleaned = cleaned.replace(/[<>'"&]/g, '')
   
-  // 移除多余空格
+  // Eliminar espacios en blanco adicionales
   cleaned = cleaned.trim()
   
   return cleaned
 }
 
 /**
- * 限制输入长度
- * @param {string} input - 输入字符串
- * @param {number} maxLength - 最大长度
- * @returns {string} 截断后的字符串
+ * Limitar longitud de entrada
+ * @param {string} input - Cadena de entrada
+ * @param {number} maxLength - Longitud máxima
+ * @returns {string} Cadena truncada
  */
 export function limitLength(input, maxLength = 255) {
   if (!input) return ''
@@ -172,11 +172,11 @@ export function limitLength(input, maxLength = 255) {
 }
 
 /**
- * 验证数字范围
- * @param {number} value - 数值
- * @param {number} min - 最小值
- * @param {number} max - 最大值
- * @returns {boolean} 是否在范围内
+ * Validar rango numérico
+ * @param {number} value - Valor numérico
+ * @param {number} min - Valor mínimo
+ * @param {number} max - Valor máximo
+ * @returns {boolean} Si está en el rango
  */
 export function isInRange(value, min, max) {
   const num = Number(value)
@@ -184,9 +184,9 @@ export function isInRange(value, min, max) {
 }
 
 /**
- * 验证URL格式
- * @param {string} url - URL字符串
- * @returns {boolean} 是否有效
+ * Validar formato de URL
+ * @param {string} url - Cadena de URL
+ * @returns {boolean} Si es válido
  */
 export function isValidUrl(url) {
   if (!url) return false
@@ -199,18 +199,18 @@ export function isValidUrl(url) {
 }
 
 /**
- * 生成CSRF token
- * @returns {string} CSRF token
+ * Generar token CSRF
+ * @returns {string} Token CSRF
  */
 export function generateCsrfToken() {
   return generateToken(32)
 }
 
 /**
- * 验证CSRF token
- * @param {string} token - 要验证的token
- * @param {string} storedToken - 存储的token
- * @returns {boolean} 是否有效
+ * Verificar token CSRF
+ * @param {string} token - Token a verificar
+ * @param {string} storedToken - Token almacenado
+ * @returns {boolean} Si es válido
  */
 export function verifyCsrfToken(token, storedToken) {
   if (!token || !storedToken) return false

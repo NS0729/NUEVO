@@ -63,19 +63,19 @@ const router = createRouter({
   }
 })
 
-// 路由守卫
+// Guardia de rutas
 router.beforeEach((to, from, next) => {
-  // 动态导入auth工具以避免循环依赖
+  // Importar dinámicamente herramienta de autenticación para evitar dependencias circulares
   import('../utils/auth.js').then(({ isAuthenticated }) => {
     const authenticated = isAuthenticated()
     
-    // 需要登录的页面
+    // Páginas que requieren inicio de sesión
     if (to.meta.requiresAuth && !authenticated) {
       next('/admin/login')
       return
     }
     
-    // 已登录用户访问登录页，重定向到后台
+    // Usuario autenticado accediendo a página de inicio de sesión, redirigir al panel de administración
     if (to.meta.requiresGuest && authenticated) {
       next('/admin/dashboard')
       return
@@ -83,7 +83,7 @@ router.beforeEach((to, from, next) => {
     
     next()
   }).catch(() => {
-    // 如果导入失败，使用简单的localStorage检查
+    // Si la importación falla, usar verificación simple de localStorage
     const isAuthenticated = localStorage.getItem('admin_token')
     
     if (to.meta.requiresAuth && !isAuthenticated) {

@@ -1,29 +1,30 @@
 <template>
   <div class="products-management">
     <div class="management-header">
-      <h2>商品管理</h2>
+      <h2>{{ t('admin.products.title') }}</h2>
       <button class="btn-add" @click="showAddModal = true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        添加商品
+        {{ t('admin.products.add') }}
       </button>
     </div>
 
     <div class="products-table">
       <div v-if="products.length === 0" class="empty-state">
         <div class="empty-icon">📦</div>
-        <p class="empty-text">暂无商品</p>
-        <p class="empty-hint">点击"添加商品"按钮开始添加商品</p>
+        <p class="empty-text">{{ t('admin.products.empty') }}</p>
+        <p class="empty-hint">{{ t('admin.products.emptyHint') }}</p>
       </div>
       <table v-else>
         <thead>
           <tr>
-            <th>商品名称</th>
-            <th>价格</th>
-            <th>条码</th>
-            <th>操作</th>
+            <th>{{ t('admin.products.name') }}</th>
+            <th>{{ t('admin.products.category') }}</th>
+            <th>{{ t('common.price') }}</th>
+            <th>{{ t('common.barcode') }}</th>
+            <th>{{ t('common.all') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -31,14 +32,17 @@
             <td>
               <span class="product-name">{{ product.name }}</span>
             </td>
+            <td>
+              <span class="category-badge">{{ getCategoryName(product.category) }}</span>
+            </td>
             <td class="price">${{ formatPrice(product.price) }}</td>
             <td>
               <span class="barcode">{{ product.barcode || '-' }}</span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-edit" @click="editProduct(product)">编辑</button>
-                <button class="btn-delete" @click="deleteProduct(product.id)">删除</button>
+                <button class="btn-edit" @click="editProduct(product)">{{ t('common.edit') }}</button>
+                <button class="btn-delete" @click="deleteProduct(product.id)">{{ t('common.delete') }}</button>
               </div>
             </td>
           </tr>
@@ -46,7 +50,7 @@
       </table>
     </div>
 
-    <!-- 添加/编辑商品模态框 -->
+    <!-- Modal para agregar/editar producto -->
     <ProductModal
       v-if="showAddModal || editingProduct"
       :product="editingProduct"
@@ -62,24 +66,42 @@ import { productsAPI } from '../../api'
 import { formatPrice } from '../../utils/priceFormatter'
 import ProductModal from './ProductModal.vue'
 import { useToast } from '../../composables/useToast'
+import { useI18n } from '../../i18n'
+import { useJewelryStore } from '../../store'
 
 const products = ref([])
 const showAddModal = ref(false)
 const editingProduct = ref(null)
 const toast = useToast()
+const { t } = useI18n()
+const store = useJewelryStore()
+
+// Obtener nombre de categoría por ID
+const getCategoryName = (categoryId) => {
+  if (!categoryId) return '-'
+  const category = store.categories.find(cat => cat.id === categoryId)
+  if (category) {
+    // Usar traducción de i18n si está disponible, sino usar el nombre del store
+    const translatedName = t(`categories.${categoryId}`) || category.name || categoryId
+    return `${category.icon || '📦'} ${translatedName}`
+  }
+  // Si no se encuentra, intentar obtener desde i18n
+  const translatedName = t(`categories.${categoryId}`) || categoryId
+  return `📦 ${translatedName}`
+}
 
 
 const loadProducts = async () => {
   try {
     const response = await productsAPI.getAll()
-    // 确保products是数组
+    // Asegurar que products sea un array
     const productsList = response.products || []
     products.value = Array.isArray(productsList) ? productsList : []
-    console.log('✅ 商品列表已加载:', products.value.length, '个商品')
+    console.log('✅ Lista de productos cargada:', products.value.length, 'productos')
   } catch (error) {
-    console.error('❌ 加载商品失败:', error)
-    toast.error('加载商品失败: ' + (error.message || '未知错误'))
-    // 如果 API 失败，使用空数组
+    console.error('❌ Error al cargar productos:', error)
+    toast.error('Error al cargar productos: ' + (error.message || 'Error desconocido'))
+    // Si la API falla, usar array vacío
     products.value = []
   }
 }
@@ -90,16 +112,16 @@ const editProduct = (product) => {
 }
 
 const deleteProduct = async (id) => {
-  if (!confirm('确定要删除这个商品吗？')) return
+  if (!confirm(t('admin.products.deleteConfirm'))) return
   
   try {
     await productsAPI.delete(id)
-    toast.success('商品已删除')
-    // 重新加载商品列表
+    toast.success(t('admin.products.deleted'))
+    // Recargar lista de productos
     await loadProducts()
   } catch (error) {
-    console.error('删除商品失败:', error)
-    toast.error('删除失败: ' + (error.message || '未知错误'))
+    console.error('Error al eliminar producto:', error)
+    toast.error(t('admin.products.deleteFailed') + ': ' + (error.message || t('common.error')))
   }
 }
 
@@ -110,75 +132,89 @@ const closeModal = () => {
 
 const handleSave = async (productData) => {
   try {
-    // 验证必填字段
+    // Validar campos requeridos
     if (!productData.name || !productData.name.trim()) {
-      toast.error('请输入商品名称')
+      toast.error(t('admin.products.nameRequired'))
       return
     }
     if (!productData.price || productData.price <= 0) {
-      toast.error('请输入有效的商品价格')
+      toast.error(t('admin.products.priceInvalid'))
       return
     }
 
-    console.log('💾 开始保存商品:', productData.name)
+    console.log('💾 Iniciando guardado de producto:', productData.name)
 
     if (editingProduct.value) {
-      // 更新商品：更新名称、价格、条码和图片，保留其他字段
+      // Actualizar producto: actualizar nombre, precio, categoría, código de barras e imagen, mantener otros campos
       const productDataToSend = {
-        ...editingProduct.value, // 保留原有商品的所有字段
-        name: productData.name.trim(), // 更新名称
-        price: Number(productData.price), // 更新价格
-        barcode: productData.barcode || '', // 更新条码
-        image: productData.image || editingProduct.value.image || '', // 更新图片（如果有新图片）
+        ...editingProduct.value, // Mantener todos los campos del producto original
+        name: productData.name.trim(), // Actualizar nombre
+        price: Number(productData.price), // Actualizar precio
+        category: productData.category || editingProduct.value.category, // Actualizar categoría
+        barcode: productData.barcode || '', // Actualizar código de barras
+        image: productData.image || editingProduct.value.image || '', // Actualizar imagen (si hay nueva imagen)
       }
-      console.log('📝 更新商品 ID:', editingProduct.value.id)
+      console.log('📝 Actualizando producto ID:', editingProduct.value.id)
       const response = await productsAPI.update(editingProduct.value.id, productDataToSend)
-      console.log('✅ 更新商品响应:', response)
-      toast.success('商品已更新')
+      console.log('✅ Respuesta de actualización:', response)
+      toast.success(t('admin.products.saved'))
     } else {
-      // 添加新商品：需要提供默认值
+      // Agregar nuevo producto: necesita proporcionar valores por defecto
       const productDataToSend = {
         name: productData.name.trim(),
         price: Number(productData.price),
+        category: productData.category || 'rings', // Usar categoría seleccionada o 'rings' por defecto
         barcode: productData.barcode || '',
         image: productData.image || '',
-        category: 'rings', // 默认分类
-        description: '', // 默认空描述
-        material: '', // 默认空材质
+        description: '', // Descripción vacía por defecto
+        material: '', // Material vacío por defecto
         originalPrice: null,
         inStock: true,
-        featured: false,
+        featured: true, // Por defecto, los nuevos productos son destacados para que aparezcan en la página principal
       }
-      console.log('➕ 创建新商品')
+      console.log('➕ Creando nuevo producto')
       const response = await productsAPI.create(productDataToSend)
-      console.log('✅ 创建商品响应:', response)
+      console.log('✅ Respuesta de creación:', response)
       if (!response || !response.id) {
-        throw new Error('创建商品失败：未返回商品ID')
+        throw new Error('Error al crear producto: no se devolvió el ID del producto')
       }
-      toast.success('商品已添加')
+      toast.success(t('admin.products.saved'))
     }
     
-    // 关闭模态框
+    // Cerrar modal
     closeModal()
     
-    // 重新加载商品列表，确保数据与数据库一致
-    console.log('🔄 重新加载商品列表...')
+    // Recargar lista de productos, asegurar que los datos sean consistentes con la base de datos
+    console.log('🔄 Recargando lista de productos...')
     await loadProducts()
-    console.log('✅ 商品列表已刷新')
+    console.log('✅ Lista de productos actualizada')
+    
+    // También actualizar el store del frontend si está disponible
+    // Esto asegura que los nuevos productos aparezcan inmediatamente en la página principal
+    try {
+      console.log('🔄 Actualizando store del frontend...')
+      await store.loadProducts()
+      console.log('✅ Store del frontend actualizado')
+    } catch (error) {
+      console.warn('⚠️ No se pudo actualizar el store del frontend:', error)
+      // No es crítico, el store se actualizará cuando el usuario regrese al frontend
+    }
   } catch (error) {
-    console.error('❌ 保存商品失败:', error)
-    console.error('错误详情:', {
+    console.error('❌ Error al guardar producto:', error)
+    console.error('Detalles del error:', {
       message: error.message,
       stack: error.stack,
       name: error.name
     })
-    const errorMessage = error.message || '未知错误'
-    toast.error('保存失败: ' + errorMessage)
+    const errorMessage = error.message || 'Error desconocido'
+    toast.error('Error al guardar: ' + errorMessage)
   }
 }
 
-onMounted(() => {
-  loadProducts()
+onMounted(async () => {
+  // Asegurar que las categorías estén cargadas antes de mostrar productos
+  await store.loadCategories()
+  await loadProducts()
 })
 </script>
 
@@ -302,6 +338,16 @@ td {
   }
 }
 
+
+.category-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: var(--accent-color);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
 
 .action-buttons {
   display: flex;

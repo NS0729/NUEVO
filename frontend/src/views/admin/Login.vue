@@ -12,14 +12,14 @@
           <div class="logo-container">
             <div class="logo-icon">💎</div>
           </div>
-          <h1 class="login-title">商家后台管理系统</h1>
-          <p class="login-subtitle">安全登录，管理您的商品和订单</p>
+          <h1 class="login-title">{{ t('admin.login.title') }}</h1>
+          <p class="login-subtitle">{{ t('admin.login.title') }}</p>
         </div>
 
         <form @submit.prevent="handleLogin" class="login-form">
           <div class="form-group">
             <label for="username">
-              用户名
+              {{ t('admin.login.username') }}
               <span class="required">*</span>
             </label>
             <div class="input-wrapper">
@@ -28,7 +28,7 @@
                 id="username"
                 v-model="formData.username"
                 type="text"
-                placeholder="请输入用户名"
+                :placeholder="t('admin.login.username')"
                 required
                 autocomplete="username"
                 :class="['form-input', { 'error': errors.username }]"
@@ -41,7 +41,7 @@
 
           <div class="form-group">
             <label for="password">
-              密码
+              {{ t('admin.login.password') }}
               <span class="required">*</span>
             </label>
             <div class="input-wrapper">
@@ -50,7 +50,7 @@
                 id="password"
                 v-model="formData.password"
                 :type="showPassword ? 'text' : 'password'"
-                placeholder="请输入密码"
+                :placeholder="t('admin.login.password')"
                 required
                 autocomplete="current-password"
                 :class="['form-input', { 'error': errors.password }]"
@@ -80,21 +80,21 @@
           <div class="form-options">
             <label class="remember-me">
               <input v-model="rememberMe" type="checkbox" />
-              <span>记住我</span>
+              <span>{{ t('admin.login.rememberMe') }}</span>
             </label>
             <a href="#" class="forgot-password" @click.prevent="handleForgotPassword">
-              忘记密码？
+              {{ t('admin.login.forgotPassword') }}
             </a>
           </div>
 
           <button type="submit" class="btn-login" :disabled="loading || !isFormValid">
             <span v-if="!loading">
               <span class="btn-icon">🔐</span>
-              登录
+              {{ t('admin.login.login') }}
             </span>
             <span v-else class="loading-content">
               <span class="spinner"></span>
-              登录中...
+              {{ t('admin.login.loggingIn') }}
             </span>
           </button>
         </form>
@@ -102,9 +102,9 @@
         <div class="login-footer">
           <div class="security-info">
             <span class="security-icon">🛡️</span>
-            <span>安全加密连接</span>
+            <span>{{ t('admin.login.security') }}</span>
           </div>
-          <p class="demo-info">演示账户: admin / admin123</p>
+          <p class="demo-info">{{ t('admin.login.demoAccount') }}</p>
         </div>
       </div>
     </div>
@@ -117,9 +117,11 @@ import { useRouter } from 'vue-router'
 import { validateUsername as validateUsernameUtil, validatePassword as validatePasswordStrength, sanitizeInput, isSqlInjectionSafe } from '../../utils/security'
 import { saveAuth } from '../../utils/auth'
 import { useToast } from '../../composables/useToast'
+import { useI18n } from '../../i18n'
 
 const router = useRouter()
 const toast = useToast()
+const { t } = useI18n()
 
 const formData = ref({
   username: '',
@@ -132,7 +134,7 @@ const loading = ref(false)
 const errors = ref({})
 const passwordStrength = ref({ valid: false, strength: 'weak', message: '' })
 
-// 监听密码变化，实时验证强度
+// Observar cambios en la contraseña, validar intensidad en tiempo real
 watch(() => formData.value.password, (newPassword) => {
   if (newPassword) {
     passwordStrength.value = validatePasswordStrength(newPassword)
@@ -157,9 +159,9 @@ const validateUsername = () => {
 
 const validatePassword = () => {
   if (!formData.value.password) {
-    errors.value.password = '密码不能为空'
+    errors.value.password = t('validation.required')
   } else if (formData.value.password.length < 6) {
-    errors.value.password = '密码长度至少6位'
+    errors.value.password = t('validation.minLength', { min: 6 })
   } else {
     delete errors.value.password
   }
@@ -177,38 +179,38 @@ const getStrengthWidth = () => {
 }
 
 const handleLogin = async () => {
-  // 清除之前的错误
+  // Limpiar errores anteriores
   errors.value = {}
 
-  // 验证输入
+  // Validar entrada
   validateUsername()
   validatePassword()
 
   if (!isFormValid.value) {
-    toast.error('请填写完整的登录信息')
+    toast.error(t('admin.login.invalidCredentials'))
     return
   }
 
-  // 安全检查：防止SQL注入
+  // Verificación de seguridad: prevenir inyección SQL
   const username = sanitizeInput(formData.value.username)
   const password = sanitizeInput(formData.value.password)
 
   if (!isSqlInjectionSafe(username) || !isSqlInjectionSafe(password)) {
-    toast.error('输入包含非法字符，请重新输入')
+    toast.error(t('validation.required'))
     return
   }
 
   loading.value = true
 
   try {
-    // 调用API登录
+    // Llamar a la API para iniciar sesión
     const { adminAuth } = await import('../../api')
     const response = await adminAuth.login(username, password)
     
-    // 保存认证信息
+    // Guardar información de autenticación
     saveAuth(response.token, response.username, response.expiresAt)
     
-    toast.success('登录成功，正在跳转...')
+    toast.success(t('admin.login.loginSuccess'))
     
     setTimeout(() => {
       router.push('/admin/dashboard')
@@ -216,15 +218,15 @@ const handleLogin = async () => {
     }, 500)
   } catch (error) {
     loading.value = false
-    console.error('登录失败:', error)
-    const errorMessage = error.message || '登录失败，请稍后重试'
+    console.error('Error al iniciar sesión:', error)
+    const errorMessage = error.message || t('admin.login.loginFailed')
     toast.error(errorMessage)
     errors.value.password = errorMessage
   }
 }
 
 const handleForgotPassword = () => {
-  toast.info('请联系系统管理员重置密码')
+  toast.info(t('admin.login.forgotPassword'))
 }
 </script>
 

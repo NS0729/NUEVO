@@ -2,10 +2,10 @@
   <div class="product-card" :class="{ 'landscape-layout': isLandscape }" @click="goToDetail">
     <div class="product-image-wrapper">
       <img 
-        :src="product.image" 
+        :src="product.image || '/placeholder.jpg'" 
         :alt="product.name"
         class="product-image"
-        loading="lazy"
+        :loading="isLandscape ? 'eager' : 'lazy'"
         @load="onImageLoad"
         @error="onImageError"
       />
@@ -25,7 +25,9 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useJewelryStore } from '../store'
 import { formatPrice } from '../utils/priceFormatter'
 
 const props = defineProps({
@@ -42,10 +44,10 @@ const props = defineProps({
 const router = useRouter()
 const store = useJewelryStore()
 
-// 数量状态
+// Estado de cantidad
 const quantity = ref(1)
 
-// WhatsApp电话号码配置
+// Configuración de número de teléfono WhatsApp
 const whatsappPhone = import.meta.env.VITE_WHATSAPP_PHONE || '8613800138000'
 
 const discountPercent = computed(() => {
@@ -60,21 +62,21 @@ const goToDetail = () => {
   router.push(`/product/${props.product.id}`)
 }
 
-// 增加数量
+// Aumentar cantidad
 const increaseQuantity = () => {
   if (quantity.value < 99) {
     quantity.value++
   }
 }
 
-// 减少数量
+// Disminuir cantidad
 const decreaseQuantity = () => {
   if (quantity.value > 1) {
     quantity.value--
   }
 }
 
-// 验证数量
+// Validar cantidad
 const validateQuantity = () => {
   if (quantity.value < 1) {
     quantity.value = 1
@@ -86,14 +88,14 @@ const validateQuantity = () => {
 const addToCart = () => {
   if (props.product.inStock) {
     store.addToCart(props.product, quantity.value)
-    // 显示成功提示
+    // Mostrar mensaje de éxito
     const toast = inject('toast', null)
     if (toast) {
-      toast.success(`已添加 ${quantity.value} 件商品到购物车！`)
+      toast.success(t('messages.addedToCart', { quantity: quantity.value }))
     } else {
-      alert(`已添加 ${quantity.value} 件商品到购物车！`)
+      alert(t('messages.addedToCart', { quantity: quantity.value }))
     }
-    // 重置数量
+    // Restablecer cantidad
     quantity.value = 1
   }
 }
@@ -102,7 +104,7 @@ const quickOrder = () => {
   if (props.product.inStock) {
     quickOrderToWhatsApp(whatsappPhone, props.product, quantity.value)
   } else {
-    alert('该商品暂时缺货')
+    alert(t('product.outOfStock'))
   }
 }
 
@@ -161,7 +163,7 @@ const onImageError = (e) => {
     }
   }
 
-  // 横屏布局：横向排列（图片在左，信息在右）
+  // Diseño horizontal: disposición horizontal (imagen a la izquierda, información a la derecha)
   &.landscape-layout {
     flex-direction: row;
     height: auto;
@@ -181,7 +183,7 @@ const onImageError = (e) => {
       flex-direction: column;
       justify-content: space-between;
       padding: 1rem 1.25rem;
-      min-width: 0; // 防止内容溢出
+      min-width: 0; // Prevenir desbordamiento de contenido
 
       .product-name {
         font-size: 1rem;
@@ -254,7 +256,7 @@ const onImageError = (e) => {
       }
     }
 
-    // 横屏时隐藏覆盖层，直接显示信息
+    // Ocultar capa superpuesta en modo horizontal, mostrar información directamente
     .product-overlay {
       display: none;
     }
@@ -616,7 +618,7 @@ const onImageError = (e) => {
       width: 100%;
       padding: 1rem;
       font-size: 1rem;
-      min-height: 48px; // 移动端最小触摸目标
+      min-height: 48px; // Objetivo táctil mínimo para móvil
     }
 
     .overlay-actions {

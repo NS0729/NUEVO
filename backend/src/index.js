@@ -1,16 +1,16 @@
 /**
  * Cloudflare Workers API for Jewelry App
- * 使用 D1 数据库存储商品和订单数据
+ * Usa la base de datos D1 para almacenar datos de productos y pedidos
  */
 
-// CORS 配置
+// Configuración CORS
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
 
-// 处理 CORS 预检请求
+// Manejar solicitudes CORS preflight
 function handleCORS(request) {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
@@ -20,7 +20,7 @@ function handleCORS(request) {
   }
 }
 
-// 统一响应格式
+// Formato de respuesta unificado
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -31,33 +31,33 @@ function jsonResponse(data, status = 200) {
   })
 }
 
-// 错误响应
+// Respuesta de error
 function errorResponse(message, status = 400) {
   return jsonResponse({ error: message }, status)
 }
 
 /**
- * 生成token
+ * Generar token
  */
 function generateToken() {
   return 'admin_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15)
 }
 
 /**
- * 验证管理员token
+ * Verificar token de administrador
  */
 async function verifyAdminToken(request, env) {
   const authHeader = request.headers.get('Authorization')
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.log('⚠️ Token验证失败: 未找到Authorization头或格式不正确')
+    console.log('⚠️ Verificación de token fallida: No se encontró el encabezado Authorization o el formato es incorrecto')
     return null
   }
 
   const token = authHeader.substring(7)
-  console.log('🔍 验证Token:', token.substring(0, 20) + '...')
+  console.log('🔍 Verificando Token:', token.substring(0, 20) + '...')
   
   try {
-    // 检查token是否有效且未过期
+    // Verificar si el token es válido y no ha expirado
     const session = await env.DB.prepare(
       `SELECT s.*, u.username, u.role, u.isActive 
        FROM admin_sessions s
@@ -66,50 +66,50 @@ async function verifyAdminToken(request, env) {
     ).bind(token).first()
 
     if (!session) {
-      console.log('⚠️ Token验证失败: 未找到有效会话或已过期')
-      // 调试：检查是否有该token但已过期
+      console.log('⚠️ Verificación de token fallida: No se encontró sesión válida o ha expirado')
+      // Depuración: verificar si existe el token pero ha expirado
       const expiredSession = await env.DB.prepare(
         `SELECT s.* FROM admin_sessions s WHERE s.token = ?`
       ).bind(token).first()
       if (expiredSession) {
-        console.log('⚠️ Token存在但已过期，过期时间:', expiredSession.expiresAt)
+        console.log('⚠️ El token existe pero ha expirado, tiempo de expiración:', expiredSession.expiresAt)
       } else {
-        console.log('⚠️ Token不存在于数据库中')
+        console.log('⚠️ El token no existe en la base de datos')
       }
       return null
     }
 
-    console.log('✅ Token验证成功:', session.username)
+    console.log('✅ Verificación de token exitosa:', session.username)
     return {
       adminId: session.adminId,
       username: session.username,
       role: session.role,
     }
   } catch (error) {
-    console.error('❌ Token验证异常:', error)
+    console.error('❌ Error en la verificación de token:', error)
     return null
   }
 }
 
 /**
- * 权限验证中间件
+ * Middleware de verificación de permisos
  */
 async function requireAuth(request, env) {
   const admin = await verifyAdminToken(request, env)
   if (!admin) {
-    return { error: errorResponse('未授权访问', 401) }
+    return { error: errorResponse('Acceso no autorizado', 401) }
   }
   return { admin }
 }
 
 /**
- * 商品相关 API
+ * API relacionada con productos
  */
 async function handleProducts(request, env) {
   const url = new URL(request.url)
   const path = url.pathname.replace('/api/products', '')
 
-  // GET /api/products - 获取所有商品
+  // GET /api/products - Obtener todos los productos
   if (request.method === 'GET' && path === '') {
     const { searchParams } = url
     const category = searchParams.get('category')
@@ -139,7 +139,7 @@ async function handleProducts(request, env) {
     try {
       const { results } = await env.DB.prepare(query).bind(...params).all()
       
-      // 处理图片数组
+      // Procesar array de imágenes
       const products = results.map(product => ({
         ...product,
         images: product.images ? JSON.parse(product.images) : [product.image],
@@ -149,11 +149,11 @@ async function handleProducts(request, env) {
 
       return jsonResponse({ products })
     } catch (error) {
-      return errorResponse(`获取商品失败: ${error.message}`, 500)
+      return errorResponse(`Error al obtener productos: ${error.message}`, 500)
     }
   }
 
-  // GET /api/products/:id - 获取单个商品
+  // GET /api/products/:id - Obtener un producto individual
   if (request.method === 'GET' && path.startsWith('/')) {
     const id = path.slice(1)
     
@@ -163,10 +163,10 @@ async function handleProducts(request, env) {
       ).bind(id).first()
 
       if (!product) {
-        return errorResponse('商品不存在', 404)
+        return errorResponse('Producto no encontrado', 404)
       }
 
-      // 处理图片数组
+      // Procesar array de imágenes
       const result = {
         ...product,
         images: product.images ? JSON.parse(product.images) : [product.image],
@@ -176,13 +176,13 @@ async function handleProducts(request, env) {
 
       return jsonResponse({ product: result })
     } catch (error) {
-      return errorResponse(`获取商品失败: ${error.message}`, 500)
+      return errorResponse(`Error al obtener producto: ${error.message}`, 500)
     }
   }
 
-  // POST /api/products - 创建商品（管理员）
+  // POST /api/products - Crear producto (administrador)
   if (request.method === 'POST' && path === '') {
-    // 验证管理员权限
+    // Verificar permisos de administrador
     const authResult = await requireAuth(request, env)
     if (authResult.error) return authResult.error
 
@@ -203,20 +203,20 @@ async function handleProducts(request, env) {
         featured = false,
       } = data
 
-      // 验证必填字段
+      // Validar campos requeridos
       if (!name || !category || price === undefined || price === null || !image) {
-        return errorResponse('缺少必填字段：name, category, price, image', 400)
+        return errorResponse('Campos requeridos faltantes: name, category, price, image', 400)
       }
 
-      // 确保价格为数字
+      // Asegurar que el precio sea un número
       const priceNum = typeof price === 'string' ? parseFloat(price) : Number(price)
       if (isNaN(priceNum) || priceNum < 0) {
-        return errorResponse('价格必须是有效的正数', 400)
+        return errorResponse('El precio debe ser un número positivo válido', 400)
       }
 
       const originalPriceNum = originalPrice ? (typeof originalPrice === 'string' ? parseFloat(originalPrice) : Number(originalPrice)) : null
       if (originalPriceNum !== null && (isNaN(originalPriceNum) || originalPriceNum < 0)) {
-        return errorResponse('原价必须是有效的正数', 400)
+        return errorResponse('El precio original debe ser un número positivo válido', 400)
       }
 
       try {
@@ -241,25 +241,25 @@ async function handleProducts(request, env) {
 
         return jsonResponse({ 
           id: result.meta.last_row_id,
-          message: '商品创建成功' 
+          message: 'Producto creado exitosamente' 
         }, 201)
       } catch (dbError) {
-        console.error('数据库错误:', dbError)
-        return errorResponse(`创建商品失败: ${dbError.message}`, 500)
+        console.error('Error de base de datos:', dbError)
+        return errorResponse(`Error al crear producto: ${dbError.message}`, 500)
       }
     } catch (error) {
-      console.error('创建商品错误:', error)
-      return errorResponse(`创建商品失败: ${error.message}`, 500)
+      console.error('Error al crear producto:', error)
+      return errorResponse(`Error al crear producto: ${error.message}`, 500)
     }
   }
 
-  // PUT /api/products/:id - 更新商品（管理员）
+  // PUT /api/products/:id - Actualizar producto (administrador)
   if (request.method === 'PUT' && path.startsWith('/')) {
-    // 验证管理员权限
+    // Verificar permisos de administrador
     const authResult = await requireAuth(request, env)
     if (authResult.error) return authResult.error
 
-    const id = path.slice(1)
+      const id = path.slice(1)
     try {
       const data = await request.json()
       const {
@@ -277,13 +277,13 @@ async function handleProducts(request, env) {
         featured,
       } = data
 
-      // 检查商品是否存在
+      // Verificar si el producto existe
       const existing = await env.DB.prepare(
         'SELECT id FROM products WHERE id = ?'
       ).bind(id).first()
 
       if (!existing) {
-        return errorResponse('商品不存在', 404)
+        return errorResponse('Producto no encontrado', 404)
       }
 
       await env.DB.prepare(
@@ -309,37 +309,37 @@ async function handleProducts(request, env) {
 
       return jsonResponse({ 
         id: parseInt(id),
-        message: '商品更新成功' 
+        message: 'Producto actualizado exitosamente' 
       })
     } catch (error) {
-      return errorResponse(`更新商品失败: ${error.message}`, 500)
+      return errorResponse(`Error al actualizar producto: ${error.message}`, 500)
     }
   }
 
-  // DELETE /api/products/:id - 删除商品（管理员）
+  // DELETE /api/products/:id - Eliminar producto (administrador)
   if (request.method === 'DELETE' && path.startsWith('/')) {
-    // 验证管理员权限
+    // Verificar permisos de administrador
     const authResult = await requireAuth(request, env)
     if (authResult.error) return authResult.error
 
     const id = path.slice(1)
     try {
-      // 检查商品是否存在
+      // Verificar si el producto existe
       const existing = await env.DB.prepare(
         'SELECT id FROM products WHERE id = ?'
       ).bind(id).first()
 
       if (!existing) {
-        return errorResponse('商品不存在', 404)
+        return errorResponse('Producto no encontrado', 404)
       }
 
       await env.DB.prepare('DELETE FROM products WHERE id = ?').bind(id).run()
 
       return jsonResponse({ 
-        message: '商品删除成功' 
+        message: 'Producto eliminado exitosamente' 
       })
     } catch (error) {
-      return errorResponse(`删除商品失败: ${error.message}`, 500)
+      return errorResponse(`Error al eliminar producto: ${error.message}`, 500)
     }
   }
 
@@ -347,7 +347,7 @@ async function handleProducts(request, env) {
 }
 
 /**
- * 分类相关 API
+ * API relacionada con categorías
  */
 async function handleCategories(request, env) {
   if (request.method === 'GET') {
@@ -358,7 +358,7 @@ async function handleCategories(request, env) {
 
       return jsonResponse({ categories: results })
     } catch (error) {
-      return errorResponse(`获取分类失败: ${error.message}`, 500)
+      return errorResponse(`Error al obtener categorías: ${error.message}`, 500)
     }
   }
 
@@ -366,15 +366,15 @@ async function handleCategories(request, env) {
 }
 
 /**
- * 订单相关 API
+ * API relacionada con pedidos
  */
 async function handleOrders(request, env) {
   const url = new URL(request.url)
   const path = url.pathname.replace('/api/orders', '')
 
-  // GET /api/orders - 获取所有订单（管理员）
+  // GET /api/orders - Obtener todos los pedidos (administrador)
   if (request.method === 'GET' && path === '') {
-    // 验证管理员权限
+    // Verificar permisos de administrador
     const authResult = await requireAuth(request, env)
     if (authResult.error) return authResult.error
 
@@ -397,7 +397,7 @@ async function handleOrders(request, env) {
 
       const { results: orders } = await env.DB.prepare(query).bind(...params).all()
 
-      // 获取每个订单的商品项
+      // Obtener los artículos de cada pedido
       const ordersWithItems = await Promise.all(
         orders.map(async (order) => {
           const { results: items } = await env.DB.prepare(
@@ -407,7 +407,7 @@ async function handleOrders(request, env) {
         })
       )
 
-      // 获取总数
+      // Obtener el total
       let countQuery = 'SELECT COUNT(*) as total FROM orders WHERE 1=1'
       const countParams = []
       if (status) {
@@ -423,11 +423,11 @@ async function handleOrders(request, env) {
         offset
       })
     } catch (error) {
-      return errorResponse(`获取订单失败: ${error.message}`, 500)
+      return errorResponse(`Error al obtener pedidos: ${error.message}`, 500)
     }
   }
 
-  // POST /api/orders - 创建订单
+  // POST /api/orders - Crear pedido
   if (request.method === 'POST' && path === '') {
     try {
       const data = await request.json()
@@ -441,10 +441,10 @@ async function handleOrders(request, env) {
       } = data
 
       if (!items || items.length === 0) {
-        return errorResponse('订单商品不能为空', 400)
+        return errorResponse('Los productos del pedido no pueden estar vacíos', 400)
       }
 
-      // 创建订单
+      // Crear pedido
       const orderResult = await env.DB.prepare(
         `INSERT INTO orders 
          (total, customerName, customerPhone, customerAddress, customerEmail, status, createdAt)
@@ -459,7 +459,7 @@ async function handleOrders(request, env) {
 
       const orderId = orderResult.meta.last_row_id
 
-      // 创建订单项
+      // Crear artículos del pedido
       for (const item of items) {
         await env.DB.prepare(
           `INSERT INTO order_items 
@@ -477,14 +477,14 @@ async function handleOrders(request, env) {
 
       return jsonResponse({ 
         orderId,
-        message: '订单创建成功' 
+        message: 'Pedido creado exitosamente' 
       }, 201)
     } catch (error) {
-      return errorResponse(`创建订单失败: ${error.message}`, 500)
+      return errorResponse(`Error al crear pedido: ${error.message}`, 500)
     }
   }
 
-  // GET /api/orders/:id - 获取订单详情
+  // GET /api/orders/:id - Obtener detalles del pedido
   if (request.method === 'GET' && path.startsWith('/')) {
     const id = path.slice(1)
     
@@ -494,7 +494,7 @@ async function handleOrders(request, env) {
       ).bind(id).first()
 
       if (!order) {
-        return errorResponse('订单不存在', 404)
+        return errorResponse('Pedido no encontrado', 404)
       }
 
       const { results: items } = await env.DB.prepare(
@@ -508,13 +508,13 @@ async function handleOrders(request, env) {
         }
       })
     } catch (error) {
-      return errorResponse(`获取订单失败: ${error.message}`, 500)
+      return errorResponse(`Error al obtener pedido: ${error.message}`, 500)
     }
   }
 
-  // PUT /api/orders/:id - 更新订单状态（管理员）
+  // PUT /api/orders/:id - Actualizar estado del pedido (administrador)
   if (request.method === 'PUT' && path.startsWith('/')) {
-    // 验证管理员权限
+    // Verificar permisos de administrador
     const authResult = await requireAuth(request, env)
     if (authResult.error) return authResult.error
 
@@ -525,16 +525,16 @@ async function handleOrders(request, env) {
 
       const validStatuses = ['pending', 'confirmed', 'shipped', 'completed', 'cancelled']
       if (!status || !validStatuses.includes(status)) {
-        return errorResponse('无效的订单状态', 400)
+        return errorResponse('Estado de pedido inválido', 400)
       }
 
-      // 检查订单是否存在
+      // Verificar si el pedido existe
       const existing = await env.DB.prepare(
         'SELECT id FROM orders WHERE id = ?'
       ).bind(id).first()
 
       if (!existing) {
-        return errorResponse('订单不存在', 404)
+        return errorResponse('Pedido no encontrado', 404)
       }
 
       await env.DB.prepare(
@@ -544,10 +544,10 @@ async function handleOrders(request, env) {
       return jsonResponse({ 
         id: parseInt(id),
         status,
-        message: '订单状态更新成功' 
+        message: 'Estado del pedido actualizado exitosamente' 
       })
     } catch (error) {
-      return errorResponse(`更新订单失败: ${error.message}`, 500)
+      return errorResponse(`Error al actualizar pedido: ${error.message}`, 500)
     }
   }
 
@@ -555,48 +555,48 @@ async function handleOrders(request, env) {
 }
 
 /**
- * 管理员认证 API
+ * API de autenticación de administrador
  */
 async function handleAdminAuth(request, env) {
   const url = new URL(request.url)
   const path = url.pathname.replace('/api/admin/auth', '')
 
-  // POST /api/admin/auth/login - 管理员登录
+  // POST /api/admin/auth/login - Inicio de sesión de administrador
   if (request.method === 'POST' && path === '/login') {
     try {
       const data = await request.json()
       const { username, password } = data
 
       if (!username || !password) {
-        return errorResponse('用户名和密码不能为空', 400)
+        return errorResponse('El nombre de usuario y la contraseña no pueden estar vacíos', 400)
       }
 
-      // 查询管理员用户（注意：生产环境应该使用密码哈希）
+      // Consultar usuario administrador (nota: en producción se debe usar hash de contraseña)
       const admin = await env.DB.prepare(
         'SELECT * FROM admin_users WHERE username = ? AND isActive = 1'
       ).bind(username).first()
 
       if (!admin) {
-        return errorResponse('用户名或密码错误', 401)
+        return errorResponse('Nombre de usuario o contraseña incorrectos', 401)
       }
 
-      // 简单的密码验证（生产环境应该使用bcrypt等哈希算法）
-      // 这里为了演示，直接比较明文密码
+      // Verificación simple de contraseña (en producción se debe usar algoritmo de hash como bcrypt)
+      // Aquí para demostración, se compara directamente la contraseña en texto plano
       if (admin.password_hash !== password) {
-        return errorResponse('用户名或密码错误', 401)
+        return errorResponse('Nombre de usuario o contraseña incorrectos', 401)
       }
 
-      // 生成token
+      // Generar token
       const token = generateToken()
-      const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() // 2小时
+      const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() // 2 horas
 
-      // 保存会话
+      // Guardar sesión
       await env.DB.prepare(
         `INSERT INTO admin_sessions (adminId, token, expiresAt)
          VALUES (?, ?, ?)`
       ).bind(admin.id, token, expiresAt).run()
 
-      // 更新最后登录时间
+      // Actualizar último tiempo de inicio de sesión
       await env.DB.prepare(
         `UPDATE admin_users SET lastLogin = datetime('now') WHERE id = ?`
       ).bind(admin.id).run()
@@ -606,14 +606,14 @@ async function handleAdminAuth(request, env) {
         username: admin.username,
         role: admin.role,
         expiresAt,
-        message: '登录成功'
+        message: 'Inicio de sesión exitoso'
       })
     } catch (error) {
-      return errorResponse(`登录失败: ${error.message}`, 500)
+      return errorResponse(`Error en el inicio de sesión: ${error.message}`, 500)
     }
   }
 
-  // POST /api/admin/auth/logout - 登出
+  // POST /api/admin/auth/logout - Cerrar sesión
   if (request.method === 'POST' && path === '/logout') {
     const authHeader = request.headers.get('Authorization')
     if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -621,17 +621,17 @@ async function handleAdminAuth(request, env) {
       try {
         await env.DB.prepare('DELETE FROM admin_sessions WHERE token = ?').bind(token).run()
       } catch (error) {
-        console.error('登出失败:', error)
+        console.error('Error al cerrar sesión:', error)
       }
     }
-    return jsonResponse({ message: '登出成功' })
+    return jsonResponse({ message: 'Cierre de sesión exitoso' })
   }
 
-  // GET /api/admin/auth/verify - 验证token
+  // GET /api/admin/auth/verify - Verificar token
   if (request.method === 'GET' && path === '/verify') {
     const admin = await verifyAdminToken(request, env)
     if (!admin) {
-      return errorResponse('Token无效或已过期', 401)
+      return errorResponse('Token inválido o expirado', 401)
     }
     return jsonResponse({ 
       valid: true,
@@ -644,30 +644,30 @@ async function handleAdminAuth(request, env) {
 }
 
 /**
- * 统计信息 API（管理员）
+ * API de estadísticas (administrador)
  */
 async function handleAdminStats(request, env) {
-  // 验证管理员权限
+  // Verificar permisos de administrador
   const authResult = await requireAuth(request, env)
   if (authResult.error) return authResult.error
 
   try {
-    // 获取商品总数
+    // Obtener total de productos
     const { totalProducts } = await env.DB.prepare(
       'SELECT COUNT(*) as totalProducts FROM products'
     ).first()
 
-    // 获取订单总数
+    // Obtener total de pedidos
     const { totalOrders } = await env.DB.prepare(
       'SELECT COUNT(*) as totalOrders FROM orders'
     ).first()
 
-    // 获取总销售额
+    // Obtener ingresos totales
     const { totalRevenue } = await env.DB.prepare(
       'SELECT COALESCE(SUM(total), 0) as totalRevenue FROM orders WHERE status != "cancelled"'
     ).first()
 
-    // 获取待处理订单数
+    // Obtener número de pedidos pendientes
     const { pendingOrders } = await env.DB.prepare(
       'SELECT COUNT(*) as pendingOrders FROM orders WHERE status = "pending"'
     ).first()
@@ -679,16 +679,16 @@ async function handleAdminStats(request, env) {
       pendingOrders: pendingOrders || 0,
     })
   } catch (error) {
-    return errorResponse(`获取统计信息失败: ${error.message}`, 500)
+    return errorResponse(`Error al obtener estadísticas: ${error.message}`, 500)
   }
 }
 
 /**
- * 主处理函数
+ * Función principal de manejo
  */
 export default {
   async fetch(request, env, ctx) {
-    // 处理 CORS
+    // Manejar CORS
     const corsResponse = handleCORS(request)
     if (corsResponse) return corsResponse
 
@@ -696,7 +696,7 @@ export default {
     const path = url.pathname
 
     try {
-      // 路由分发
+      // Distribución de rutas
       if (path.startsWith('/api/products')) {
         return await handleProducts(request, env)
       } else if (path.startsWith('/api/categories')) {
@@ -713,7 +713,7 @@ export default {
         return errorResponse('Not Found', 404)
       }
     } catch (error) {
-      return errorResponse(`服务器错误: ${error.message}`, 500)
+      return errorResponse(`Error del servidor: ${error.message}`, 500)
     }
   },
 }

@@ -1,7 +1,7 @@
 {
   "name": "jewelry-app-frontend",
   "version": "1.0.0",
-  "description": "专业精美的首饰展示应用 - 前端",
+  "description": "Aplicación de exhibición de joyería elegante y profesional - Frontend",
   "type": "module",
   "scripts": {
     "dev": "vite",

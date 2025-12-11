@@ -1,12 +1,12 @@
 /**
- * API 客户端
- * 用于前端与 Cloudflare Workers API 通信
+ * Cliente API
+ * Para la comunicación del frontend con la API de Cloudflare Workers
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787'
 
 /**
- * 通用请求函数
+ * Función de solicitud genérica
  */
 async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`
@@ -23,17 +23,18 @@ async function request(endpoint, options = {}) {
     config.body = JSON.stringify(config.body)
   }
 
-  // 调试：记录请求信息
+  // Depuración: registrar información de la solicitud
+  console.log('📡 API: Realizando solicitud a:', url)
   if (options.headers?.Authorization) {
-    console.log('🔐 API请求 - 包含Authorization头:', endpoint)
+    console.log('🔐 API: Solicitud con encabezado Authorization:', endpoint)
   } else {
-    console.log('📡 API请求 - 无Authorization头:', endpoint)
+    console.log('📡 API: Solicitud sin encabezado Authorization:', endpoint)
   }
 
   try {
     const response = await fetch(url, config)
     
-    // 检查响应类型
+    // Verificar tipo de respuesta
     let data
     const contentType = response.headers.get('content-type')
     if (contentType && contentType.includes('application/json')) {
@@ -48,14 +49,20 @@ async function request(endpoint, options = {}) {
     }
 
     if (!response.ok) {
-      const errorMessage = data.error || data.message || `请求失败 (${response.status})`
-      // 如果是401未授权，清除本地token并提示重新登录
+      const errorMessage = data.error || data.message || `Solicitud fallida (${response.status})`
+      console.error('❌ API: Error en respuesta:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorMessage,
+        data: data
+      })
+      // Si es 401 no autorizado, limpiar el token local y pedir iniciar sesión de nuevo
       if (response.status === 401) {
-        console.warn('⚠️ 401未授权 - 清除token并提示重新登录')
+        console.warn('⚠️ 401 No autorizado - Limpiando token y solicitando iniciar sesión de nuevo')
         localStorage.removeItem('admin_token')
         localStorage.removeItem('admin_user')
         localStorage.removeItem('admin_token_expiry')
-        // 如果不在登录页面，跳转到登录页
+        // Si no estamos en la página de inicio de sesión, redirigir a la página de inicio de sesión
         if (!window.location.pathname.includes('/admin/login')) {
           window.location.href = '/admin/login'
         }
@@ -63,34 +70,40 @@ async function request(endpoint, options = {}) {
       throw new Error(errorMessage)
     }
 
+    console.log('✅ API: Respuesta exitosa:', {
+      endpoint: endpoint,
+      dataKeys: Object.keys(data),
+      hasProducts: !!data.products,
+      productsCount: data.products?.length || 0
+    })
     return data
   } catch (error) {
-    console.error('❌ API请求错误:', error)
-    console.error('请求URL:', url)
-    console.error('请求配置:', {
+    console.error('❌ API: Error en solicitud:', error)
+    console.error('URL de solicitud:', url)
+    console.error('Configuración de solicitud:', {
       method: config.method || 'GET',
       hasAuth: !!config.headers?.Authorization,
-      body: config.body ? '有body' : '无body'
+      body: config.body ? 'con body' : 'sin body'
     })
     
-    // 如果是网络错误，提供更友好的错误信息
+    // Si es un error de red, proporcionar un mensaje de error más amigable
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      const friendlyError = new Error('无法连接到服务器，请检查后端服务是否运行')
+      const friendlyError = new Error('No se pudo conectar al servidor, por favor verifique que el servicio backend esté funcionando')
       friendlyError.details = {
         apiUrl: API_BASE_URL,
         endpoint: endpoint,
-        suggestion: '请确保后端服务正在运行: cd backend && npm run dev'
+        suggestion: 'Por favor, asegúrese de que el servicio backend esté funcionando: cd backend && npm run dev'
       }
       throw friendlyError
     }
     
-    // 如果是连接被拒绝
+    // Si la conexión fue rechazada
     if (error.message && error.message.includes('ECONNREFUSED')) {
-      const friendlyError = new Error('无法连接到API服务器')
+      const friendlyError = new Error('No se pudo conectar al servidor API')
       friendlyError.details = {
         apiUrl: API_BASE_URL,
         endpoint: endpoint,
-        suggestion: '请检查后端服务是否在端口8787上运行'
+        suggestion: 'Por favor, verifique que el servicio backend esté funcionando en el puerto 8787'
       }
       throw friendlyError
     }
@@ -100,10 +113,10 @@ async function request(endpoint, options = {}) {
 }
 
 /**
- * 商品 API
+ * API de productos
  */
 export const productsAPI = {
-  // 获取所有商品
+  // Obtener todos los productos
   getAll: async (params = {}) => {
     const queryParams = new URLSearchParams()
     if (params.category) queryParams.append('category', params.category)
@@ -114,19 +127,19 @@ export const productsAPI = {
     return request(`/api/products${query ? `?${query}` : ''}`)
   },
 
-  // 获取单个商品
+  // Obtener un solo producto
   getById: async (id) => {
     return request(`/api/products/${id}`)
   },
 
-  // 创建商品（管理员）
+  // Crear producto (administrador)
   create: async (productData) => {
     const token = localStorage.getItem('admin_token')
-    console.log('🔑 创建商品 - Token检查:', token ? `存在 (${token.substring(0, 20)}...)` : '不存在')
+    console.log('🔑 Crear producto - Verificación de token:', token ? `existe (${token.substring(0, 20)}...)` : 'no existe')
     
     if (!token) {
-      console.error('❌ 未找到token，请先登录')
-      throw new Error('未登录，请先登录')
+      console.error('❌ Token no encontrado, por favor inicie sesión primero')
+      throw new Error('No ha iniciado sesión, por favor inicie sesión primero')
     }
     
     return request('/api/products', {
@@ -138,11 +151,11 @@ export const productsAPI = {
     })
   },
 
-  // 更新商品（管理员）
+  // Actualizar producto (administrador)
   update: async (id, productData) => {
     const token = localStorage.getItem('admin_token')
     if (!token) {
-      throw new Error('未登录')
+      throw new Error('No ha iniciado sesión')
     }
     return request(`/api/products/${id}`, {
       method: 'PUT',
@@ -153,11 +166,11 @@ export const productsAPI = {
     })
   },
 
-  // 删除商品（管理员）
+  // Eliminar producto (administrador)
   delete: async (id) => {
     const token = localStorage.getItem('admin_token')
     if (!token) {
-      throw new Error('未登录')
+      throw new Error('No ha iniciado sesión')
     }
     return request(`/api/products/${id}`, {
       method: 'DELETE',
@@ -169,20 +182,20 @@ export const productsAPI = {
 }
 
 /**
- * 分类 API
+ * API de categorías
  */
 export const categoriesAPI = {
-  // 获取所有分类
+  // Obtener todas las categorías
   getAll: async () => {
     return request('/api/categories')
   },
 }
 
 /**
- * 订单 API
+ * API de pedidos
  */
 export const ordersAPI = {
-  // 创建订单
+  // Crear pedido
   create: async (orderData) => {
     return request('/api/orders', {
       method: 'POST',
@@ -190,16 +203,16 @@ export const ordersAPI = {
     })
   },
 
-  // 获取订单详情
+  // Obtener detalles del pedido
   getById: async (id) => {
     return request(`/api/orders/${id}`)
   },
 
-  // 获取所有订单（管理员）
+  // Obtener todos los pedidos (administrador)
   getAll: async (params = {}) => {
     const token = localStorage.getItem('admin_token')
     if (!token) {
-      throw new Error('未登录')
+      throw new Error('No ha iniciado sesión')
     }
 
     const queryParams = new URLSearchParams()
@@ -215,11 +228,11 @@ export const ordersAPI = {
     })
   },
 
-  // 更新订单状态（管理员）
+  // Actualizar estado del pedido (administrador)
   updateStatus: async (id, status) => {
     const token = localStorage.getItem('admin_token')
     if (!token) {
-      throw new Error('未登录')
+      throw new Error('No ha iniciado sesión')
     }
     return request(`/api/orders/${id}`, {
       method: 'PUT',
@@ -232,10 +245,10 @@ export const ordersAPI = {
 }
 
 /**
- * 管理员认证 API
+ * API de autenticación de administrador
  */
 export const adminAuthAPI = {
-  // 登录
+  // Iniciar sesión
   login: async (username, password) => {
     return request('/api/admin/auth/login', {
       method: 'POST',
@@ -243,7 +256,7 @@ export const adminAuthAPI = {
     })
   },
 
-  // 登出
+  // Cerrar sesión
   logout: async () => {
     const token = localStorage.getItem('admin_token')
     return request('/api/admin/auth/logout', {
@@ -254,11 +267,11 @@ export const adminAuthAPI = {
     })
   },
 
-  // 验证token
+  // Verificar token
   verify: async () => {
     const token = localStorage.getItem('admin_token')
     if (!token) {
-      throw new Error('未登录')
+      throw new Error('No ha iniciado sesión')
     }
     return request('/api/admin/auth/verify', {
       headers: {
@@ -269,14 +282,14 @@ export const adminAuthAPI = {
 }
 
 /**
- * 管理员统计 API
+ * API de estadísticas de administrador
  */
 export const adminStatsAPI = {
-  // 获取统计数据
+  // Obtener datos estadísticos
   getStats: async () => {
     const token = localStorage.getItem('admin_token')
     if (!token) {
-      throw new Error('未登录')
+      throw new Error('No ha iniciado sesión')
     }
     return request('/api/admin/stats', {
       headers: {
@@ -286,27 +299,27 @@ export const adminStatsAPI = {
   },
 }
 
-// 确保 adminStatsAPI 正确导出（防止构建优化问题）
+// Asegurar que adminStatsAPI se exporte correctamente (para evitar problemas de optimización de compilación)
 if (typeof window !== 'undefined') {
   window.__adminStatsAPI = adminStatsAPI
 }
 
 /**
- * 健康检查
+ * Verificación de salud
  */
 export const healthCheck = async () => {
   return request('/api/health')
 }
 
 /**
- * 检查API连接状态
+ * Verificar estado de conexión de la API
  */
 export const checkApiConnection = async () => {
   try {
     const result = await healthCheck()
     return { connected: true, status: 'ok', data: result }
   } catch (error) {
-    console.error('API连接检查失败:', error)
+    console.error('Error al verificar la conexión de la API:', error)
     return { 
       connected: false, 
       status: 'error', 
@@ -317,13 +330,13 @@ export const checkApiConnection = async () => {
 }
 
 /**
- * 获取API基础URL（用于调试）
+ * Obtener URL base de la API (para depuración)
  */
 export const getApiBaseUrl = () => {
   return API_BASE_URL
 }
 
-// 导出别名以保持兼容性
+// Exportar alias para mantener la compatibilidad
 export const adminAuth = adminAuthAPI
 
 export default {

@@ -6,14 +6,14 @@
           <span class="category-icon">{{ categoryIcon }}</span>
           {{ categoryName }}
         </h1>
-        <p class="page-subtitle">发现精美的{{ categoryName }}系列</p>
+        <p class="page-subtitle">{{ t('category.subtitle', { name: categoryName }) }}</p>
       </div>
 
       <div v-if="products.length === 0" class="empty-state">
         <div class="empty-icon">🔍</div>
-        <h2>暂无商品</h2>
-        <p>该分类下暂时没有商品</p>
-        <router-link to="/" class="btn btn-primary">返回首页</router-link>
+        <h2>{{ t('category.empty') }}</h2>
+        <p>{{ t('category.emptyDesc') }}</p>
+        <router-link to="/" class="btn btn-primary">{{ t('category.backHome') }}</router-link>
       </div>
 
       <div v-else class="products-grid" :class="{ 'landscape-mode': isLandscape && isMobile }">
@@ -34,11 +34,13 @@ import { useRoute } from 'vue-router'
 import { useJewelryStore } from '../store'
 import ProductCard from '../components/ProductCard.vue'
 import { useOrientation } from '../composables/useOrientation'
+import { useI18n } from '../i18n'
 
 const route = useRoute()
 const store = useJewelryStore()
+const { t } = useI18n()
 
-// 横屏检测
+// Detección de orientación horizontal
 const { isLandscape, isMobile } = useOrientation()
 
 const categoryId = route.params.id
@@ -47,14 +49,14 @@ const category = computed(() => {
   return store.categories.find(cat => cat.id === categoryId)
 })
 
-const categoryName = computed(() => category.value?.name || '分类')
+const categoryName = computed(() => category.value?.name || t('category.title'))
 const categoryIcon = computed(() => category.value?.icon || '💎')
 
 const products = computed(() => {
   return store.getProductsByCategory(categoryId)
 })
 
-// 如果商品列表为空，尝试加载
+// Si la lista de productos está vacía, intentar cargar
 onMounted(async () => {
   if (store.products.length === 0 && !store.isLoading) {
     await store.loadProducts()
@@ -68,7 +70,7 @@ onMounted(async () => {
   min-height: 60vh;
 
   @media (max-width: 768px) {
-    padding-bottom: 6rem; // 为底部导航栏预留空间
+    padding-bottom: 6rem; // Reservar espacio para la barra de navegación inferior
   }
 }
 
@@ -135,7 +137,7 @@ onMounted(async () => {
     gap: 1.5rem;
   }
 
-  // 横屏模式：横向滚动布局
+  // Modo horizontal: diseño de desplazamiento horizontal
   &.landscape-mode {
     display: flex;
     flex-direction: row;
@@ -161,7 +163,7 @@ onMounted(async () => {
       border-radius: 3px;
     }
 
-    // 商品卡片在横屏时的样式
+    // Estilos de tarjeta de producto en modo horizontal
     :deep(.product-card) {
       flex: 0 0 auto;
       width: 85vw;

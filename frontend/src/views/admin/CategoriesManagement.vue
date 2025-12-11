@@ -1,13 +1,13 @@
 <template>
   <div class="categories-management">
     <div class="management-header">
-      <h2>分类管理</h2>
+      <h2>{{ t('admin.categories.title') }}</h2>
       <button class="btn-add" @click="showAddModal = true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        添加分类
+        {{ t('admin.categories.add') }}
       </button>
     </div>
 
@@ -23,48 +23,48 @@
           <p class="category-id">ID: {{ category.id }}</p>
         </div>
         <div class="category-actions">
-          <button class="btn-edit" @click="editCategory(category)">编辑</button>
-          <button class="btn-delete" @click="deleteCategory(category.id)">删除</button>
+          <button class="btn-edit" @click="editCategory(category)">{{ t('common.edit') }}</button>
+          <button class="btn-delete" @click="deleteCategory(category.id)">{{ t('common.delete') }}</button>
         </div>
       </div>
     </div>
 
-    <!-- 添加/编辑分类模态框 -->
+    <!-- Modal para agregar/editar categoría -->
     <div v-if="showAddModal" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
-        <h3>{{ editingCategory ? '编辑分类' : '添加分类' }}</h3>
+        <h3>{{ editingCategory ? t('admin.categories.edit') : t('admin.categories.add') }}</h3>
         <form @submit.prevent="handleSave">
           <div class="form-group">
-            <label>分类ID</label>
+            <label>{{ t('admin.categories.id') }}</label>
             <input
               v-model="formData.id"
               type="text"
-              placeholder="例如: rings"
+              placeholder="ej: rings"
               required
               :disabled="!!editingCategory"
             />
           </div>
           <div class="form-group">
-            <label>分类名称</label>
+            <label>{{ t('admin.categories.name') }}</label>
             <input
               v-model="formData.name"
               type="text"
-              placeholder="例如: 戒指"
+              placeholder="ej: Anillos"
               required
             />
           </div>
           <div class="form-group">
-            <label>图标</label>
+            <label>{{ t('admin.categories.icon') }}</label>
             <input
               v-model="formData.icon"
               type="text"
-              placeholder="例如: 💍"
+              placeholder="ej: 💍"
               required
             />
           </div>
           <div class="modal-actions">
-            <button type="button" @click="closeModal" class="btn-cancel">取消</button>
-            <button type="submit" class="btn-save">保存</button>
+            <button type="button" @click="closeModal" class="btn-cancel">{{ t('common.cancel') }}</button>
+            <button type="submit" class="btn-save">{{ t('common.save') }}</button>
           </div>
         </form>
       </div>
@@ -75,7 +75,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { categoriesAPI } from '../../api'
+import { useI18n } from '../../i18n'
 
+const { t } = useI18n()
 const categories = ref([])
 const showAddModal = ref(false)
 const editingCategory = ref(null)
@@ -90,7 +92,7 @@ const loadCategories = async () => {
     const response = await categoriesAPI.getAll()
     categories.value = response.categories || []
   } catch (error) {
-    console.error('加载分类失败:', error)
+    console.error('Error al cargar categorías:', error)
     categories.value = []
   }
 }
@@ -102,14 +104,14 @@ const editCategory = (category) => {
 }
 
 const deleteCategory = async (id) => {
-  if (!confirm('确定要删除这个分类吗？')) return
+  if (!confirm(t('admin.categories.deleteConfirm'))) return
   
   try {
     categories.value = categories.value.filter(c => c.id !== id)
-    alert('分类已删除')
+    alert(t('admin.categories.deleted'))
   } catch (error) {
-    console.error('删除分类失败:', error)
-    alert('删除失败')
+    console.error('Error al eliminar categoría:', error)
+    alert(t('common.error'))
   }
 }
 
@@ -121,17 +123,17 @@ const closeModal = () => {
 
 const handleSave = () => {
   if (editingCategory.value) {
-    // 更新分类
+    // Actualizar categoría
     const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
     if (index > -1) {
       categories.value[index] = { ...formData.value }
     }
   } else {
-    // 添加新分类
+    // Agregar nueva categoría
     categories.value.push({ ...formData.value })
   }
   closeModal()
-  alert(editingCategory.value ? '分类已更新' : '分类已添加')
+  alert(editingCategory.value ? t('admin.categories.updated') : t('admin.categories.added'))
 }
 
 onMounted(() => {

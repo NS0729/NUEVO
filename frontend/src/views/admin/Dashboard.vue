@@ -2,25 +2,25 @@
   <div class="admin-dashboard">
     <div class="dashboard-header">
       <div class="header-left">
-        <h1>商家后台管理系统</h1>
+        <h1>{{ t('admin.dashboard.title') }}</h1>
         <div class="header-info">
           <span class="admin-name">
             <span class="info-icon">👤</span>
-            管理员: {{ adminUser }}
+            Administrador: {{ adminUser }}
           </span>
           <span v-if="remainingTime > 0" class="session-time">
             <span class="info-icon">⏱️</span>
-            会话剩余: {{ remainingTime }} 分钟
+            {{ t('admin.dashboard.sessionExpiring') }}: {{ remainingTime }} minutos
           </span>
         </div>
       </div>
       <div class="header-actions">
-        <button class="btn-refresh" @click="loadStats" title="刷新数据">
+        <button class="btn-refresh" @click="loadStats" :title="t('common.all')">
           <span>🔄</span>
         </button>
         <button class="btn-logout" @click="handleLogout">
           <span>🚪</span>
-          退出登录
+          {{ t('admin.dashboard.logout') }}
         </button>
       </div>
     </div>
@@ -30,28 +30,28 @@
         <div class="stat-icon">📦</div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.totalProducts }}</div>
-          <div class="stat-label">商品总数</div>
+          <div class="stat-label">{{ t('admin.dashboard.stats.totalProducts') }}</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">🛒</div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.totalOrders }}</div>
-          <div class="stat-label">订单总数</div>
+          <div class="stat-label">{{ t('admin.dashboard.stats.totalOrders') }}</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">💰</div>
         <div class="stat-info">
           <div class="stat-value">${{ formatPrice(stats.totalRevenue) }}</div>
-          <div class="stat-label">总销售额</div>
+          <div class="stat-label">{{ t('admin.dashboard.stats.totalRevenue') }}</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">⏳</div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.pendingOrders }}</div>
-          <div class="stat-label">待处理订单</div>
+          <div class="stat-label">{{ t('admin.dashboard.stats.pendingOrders') }}</div>
         </div>
       </div>
     </div>
@@ -70,13 +70,13 @@
       </div>
 
       <div class="content-body">
-        <!-- 商品管理 -->
+        <!-- Gestión de productos -->
         <ProductsManagement v-if="activeTab === 'products'" />
 
-        <!-- 订单管理 -->
+        <!-- Gestión de pedidos -->
         <OrdersManagement v-if="activeTab === 'orders'" />
 
-        <!-- 分类管理 -->
+        <!-- Gestión de categorías -->
         <CategoriesManagement v-if="activeTab === 'categories'" />
       </div>
     </div>
@@ -92,20 +92,22 @@ import CategoriesManagement from './CategoriesManagement.vue'
 import { formatPrice } from '../../utils/priceFormatter'
 import { isAuthenticated, getCurrentUser, clearAuth, refreshToken, getRemainingSessionTime, isTokenExpiringSoon } from '../../utils/auth'
 import { useToast } from '../../composables/useToast'
-// 导入 API - 使用命名导入
+import { useI18n } from '../../i18n'
+// Importar API - usar importación con nombre
 import { adminStatsAPI, adminAuth } from '../../api'
 
 const router = useRouter()
 const toast = useToast()
+const { t } = useI18n()
 
 const adminUser = ref(getCurrentUser() || 'admin')
 const activeTab = ref('products')
 const sessionWarningShown = ref(false)
 
 const tabs = [
-  { id: 'products', name: '商品管理', icon: '📦' },
-  { id: 'orders', name: '订单管理', icon: '🛒' },
-  { id: 'categories', name: '分类管理', icon: '📁' },
+  { id: 'products', name: t('admin.dashboard.tabs.products'), icon: '📦' },
+  { id: 'orders', name: t('admin.dashboard.tabs.orders'), icon: '🛒' },
+  { id: 'categories', name: t('admin.dashboard.tabs.categories'), icon: '📁' },
 ]
 
 const stats = ref({
@@ -119,16 +121,16 @@ const remainingTime = ref(0)
 
 const loadStats = async () => {
   try {
-    // 确保 adminStatsAPI 已正确导入
+    // Asegurar que adminStatsAPI se haya importado correctamente
     if (!adminStatsAPI || typeof adminStatsAPI.getStats !== 'function') {
-      console.error('❌ adminStatsAPI 未正确导入')
-      throw new Error('统计数据API未正确加载，请刷新页面')
+      console.error('❌ adminStatsAPI no se importó correctamente')
+      throw new Error('La API de estadísticas no se cargó correctamente, por favor actualice la página')
     }
     
-    // 调用 API 获取统计数据
-    console.log('📊 开始加载统计数据...')
+    // Llamar a la API para obtener datos estadísticos
+    console.log('📊 Iniciando carga de datos estadísticos...')
     const data = await adminStatsAPI.getStats()
-    console.log('✅ 统计数据加载成功:', data)
+    console.log('✅ Datos estadísticos cargados exitosamente:', data)
     
     stats.value = {
       totalProducts: data.totalProducts || 0,
@@ -137,15 +139,15 @@ const loadStats = async () => {
       pendingOrders: data.pendingOrders || 0,
     }
   } catch (error) {
-    console.error('❌ 加载统计数据失败:', error)
-    console.error('错误详情:', {
+    console.error('❌ Error al cargar datos estadísticos:', error)
+    console.error('Detalles del error:', {
       message: error.message,
       stack: error.stack,
       adminStatsAPI: typeof adminStatsAPI,
       getStats: typeof adminStatsAPI?.getStats
     })
-    toast.error('加载统计数据失败: ' + (error.message || '未知错误'))
-    // 如果API失败，使用默认值
+    toast.error('Error al cargar datos estadísticos: ' + (error.message || 'Error desconocido'))
+    // Si la API falla, usar valores por defecto
     stats.value = {
       totalProducts: 0,
       totalOrders: 0,
@@ -156,38 +158,38 @@ const loadStats = async () => {
 }
 
 const handleLogout = async () => {
-  if (confirm('确定要退出登录吗？')) {
+  if (confirm(t('admin.dashboard.logoutConfirm'))) {
     try {
-      // 调用API登出
+      // Llamar a la API para cerrar sesión
       await adminAuth.logout()
     } catch (error) {
-      console.error('登出API调用失败:', error)
+      console.error('Error al llamar a la API de cierre de sesión:', error)
     }
     clearAuth()
-    toast.success('已安全退出')
+    toast.success(t('admin.dashboard.logoutSuccess'))
     router.push('/admin/login')
   }
 }
 
-// 会话管理
+// Gestión de sesión
 let sessionCheckInterval = null
 let activityTimeout = null
 
 const checkSession = () => {
   if (!isAuthenticated()) {
-    toast.error('会话已过期，请重新登录')
+    toast.error(t('admin.dashboard.sessionExpired'))
     router.push('/admin/login')
     return
   }
 
-  // 刷新token
+  // Refrescar token
   refreshToken()
   remainingTime.value = getRemainingSessionTime()
 
-  // 检查是否即将过期
+  // Verificar si está a punto de expirar
   if (isTokenExpiringSoon() && !sessionWarningShown.value) {
     sessionWarningShown.value = true
-    toast.warning(`会话将在 ${remainingTime.value} 分钟后过期，请及时保存工作`)
+    toast.warning(t('admin.dashboard.sessionExpiring', { time: remainingTime.value }))
   }
 }
 
@@ -196,28 +198,28 @@ const resetActivityTimeout = () => {
     clearTimeout(activityTimeout)
   }
   
-  // 用户活动时刷新token
+  // Refrescar token cuando el usuario está activo
   activityTimeout = setTimeout(() => {
     refreshToken()
-  }, 5 * 60 * 1000) // 5分钟无活动后刷新
+  }, 5 * 60 * 1000) // Refrescar después de 5 minutos de inactividad
 }
 
 onMounted(() => {
-  // 检查登录状态
+  // Verificar estado de inicio de sesión
   if (!isAuthenticated()) {
-    toast.error('请先登录')
+    toast.error(t('admin.dashboard.sessionExpired'))
     router.push('/admin/login')
     return
   }
 
-  // 初始化会话管理
+  // Inicializar gestión de sesión
   refreshToken()
   remainingTime.value = getRemainingSessionTime()
   
-  // 定期检查会话状态
-  sessionCheckInterval = setInterval(checkSession, 60000) // 每分钟检查一次
+  // Verificar estado de sesión periódicamente
+  sessionCheckInterval = setInterval(checkSession, 60000) // Verificar cada minuto
 
-  // 监听用户活动
+  // Escuchar actividad del usuario
   const events = ['mousedown', 'keydown', 'scroll', 'touchstart']
   events.forEach(event => {
     document.addEventListener(event, resetActivityTimeout, { passive: true })

@@ -1,7 +1,7 @@
 {
   "name": "jewelry-app-backend",
   "version": "1.0.0",
-  "description": "专业精美的首饰展示应用 - 后端 API (Cloudflare Workers + D1)",
+  "description": "Aplicación de exhibición de joyería elegante y profesional - Backend API (Cloudflare Workers + D1)",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",

@@ -1,13 +1,13 @@
 /**
- * 图片自动缩放和压缩工具
+ * Herramienta de escalado y compresión automática de imágenes
  */
 
 /**
- * 压缩图片
- * @param {File|string} file - 图片文件或URL
- * @param {number} maxWidth - 最大宽度
- * @param {number} maxHeight - 最大高度
- * @param {number} quality - 压缩质量 (0-1)
+ * Comprimir imagen
+ * @param {File|string} file - Archivo de imagen o URL
+ * @param {number} maxWidth - Ancho máximo
+ * @param {number} maxHeight - Alto máximo
+ * @param {number} quality - Calidad de compresión (0-1)
  * @returns {Promise<Blob>}
  */
 export async function compressImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
@@ -17,7 +17,7 @@ export async function compressImage(file, maxWidth = 1920, maxHeight = 1920, qua
     const ctx = canvas.getContext('2d')
 
     img.onload = () => {
-      // 计算新尺寸，保持宽高比
+      // Calcular nuevo tamaño, mantener relación de aspecto
       let width = img.width
       let height = img.height
 
@@ -30,16 +30,16 @@ export async function compressImage(file, maxWidth = 1920, maxHeight = 1920, qua
       canvas.width = width
       canvas.height = height
 
-      // 绘制图片
+      // Dibujar imagen
       ctx.drawImage(img, 0, 0, width, height)
 
-      // 转换为Blob
+      // Convertir a Blob
       canvas.toBlob(
         (blob) => {
           if (blob) {
             resolve(blob)
           } else {
-            reject(new Error('图片压缩失败'))
+            reject(new Error('Error al comprimir imagen'))
           }
         },
         'image/jpeg',
@@ -47,7 +47,7 @@ export async function compressImage(file, maxWidth = 1920, maxHeight = 1920, qua
       )
     }
 
-    img.onerror = () => reject(new Error('图片加载失败'))
+    img.onerror = () => reject(new Error('Error al cargar imagen'))
 
     if (file instanceof File) {
       img.src = URL.createObjectURL(file)
@@ -58,13 +58,13 @@ export async function compressImage(file, maxWidth = 1920, maxHeight = 1920, qua
 }
 
 /**
- * 处理本地图片文件（压缩和缩放）
- * @param {File} file - 图片文件
- * @param {Object} options - 选项
- * @param {number} options.maxWidth - 最大宽度，默认1200
- * @param {number} options.maxHeight - 最大高度，默认1200
- * @param {number} options.quality - 压缩质量 (0-1)，默认0.85
- * @param {string} options.format - 输出格式 ('jpeg'|'webp'|'png')，默认'jpeg'
+ * Procesar archivo de imagen local (compresión y escalado)
+ * @param {File} file - Archivo de imagen
+ * @param {Object} options - Opciones
+ * @param {number} options.maxWidth - Ancho máximo, por defecto 1200
+ * @param {number} options.maxHeight - Alto máximo, por defecto 1200
+ * @param {number} options.quality - Calidad de compresión (0-1), por defecto 0.85
+ * @param {string} options.format - Formato de salida ('jpeg'|'webp'|'png'), por defecto 'jpeg'
  * @returns {Promise<{dataUrl: string, blob: Blob, originalSize: number, compressedSize: number, dimensions: {width: number, height: number, originalWidth: number, originalHeight: number}}>}
  */
 export async function processImageFile(file, options = {}) {
@@ -84,7 +84,7 @@ export async function processImageFile(file, options = {}) {
         const originalWidth = img.naturalWidth
         const originalHeight = img.naturalHeight
 
-        // 计算新尺寸，保持宽高比
+        // Calcular nuevo tamaño, mantener relación de aspecto
         let width = originalWidth
         let height = originalHeight
 
@@ -94,29 +94,29 @@ export async function processImageFile(file, options = {}) {
           height = Math.round(height * ratio)
         }
 
-        // 创建canvas并绘制图片
+        // Crear canvas y dibujar imagen
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
         canvas.width = width
         canvas.height = height
 
-        // 绘制图片
+        // Dibujar imagen
         ctx.drawImage(img, 0, 0, width, height)
 
-        // 转换为Blob
+        // Convertir a Blob
         const mimeType = format === 'webp' ? 'image/webp' : format === 'png' ? 'image/png' : 'image/jpeg'
         
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              reject(new Error('图片处理失败'))
+              reject(new Error('Error al procesar imagen'))
               return
             }
 
-            // 转换为Data URL
+            // Convertir a Data URL
             const reader = new FileReader()
             reader.onloadend = () => {
-              // 清理临时URL
+              // Limpiar URL temporal
               URL.revokeObjectURL(img.src)
               
               resolve({
@@ -134,7 +134,7 @@ export async function processImageFile(file, options = {}) {
             }
             reader.onerror = () => {
               URL.revokeObjectURL(img.src)
-              reject(new Error('读取处理后的图片失败'))
+              reject(new Error('Error al leer imagen procesada'))
             }
             reader.readAsDataURL(blob)
           },
@@ -149,19 +149,19 @@ export async function processImageFile(file, options = {}) {
 
     img.onerror = () => {
       URL.revokeObjectURL(img.src)
-      reject(new Error('图片加载失败'))
+      reject(new Error('Error al cargar imagen'))
     }
 
-    // 创建临时URL
+    // Crear URL temporal
     img.src = URL.createObjectURL(file)
   })
 }
 
 /**
- * 创建响应式图片URL（使用srcset）
- * @param {string} baseUrl - 基础图片URL
- * @param {Array<number>} sizes - 尺寸数组，如 [400, 800, 1200]
- * @returns {Object} 包含src和srcset的对象
+ * Crear URL de imagen responsiva (usando srcset)
+ * @param {string} baseUrl - URL base de la imagen
+ * @param {Array<number>} sizes - Array de tamaños, ej: [400, 800, 1200]
+ * @returns {Object} Objeto que contiene src y srcset
  */
 export function createResponsiveImage(baseUrl, sizes = [400, 800, 1200]) {
   const srcset = sizes
@@ -176,9 +176,9 @@ export function createResponsiveImage(baseUrl, sizes = [400, 800, 1200]) {
 }
 
 /**
- * 懒加载图片处理
- * @param {HTMLElement} imgElement - 图片元素
- * @param {string} src - 图片URL
+ * Procesamiento de carga diferida de imágenes
+ * @param {HTMLElement} imgElement - Elemento de imagen
+ * @param {string} src - URL de la imagen
  */
 export function lazyLoadImage(imgElement, src) {
   const observer = new IntersectionObserver((entries) => {
@@ -198,8 +198,8 @@ export function lazyLoadImage(imgElement, src) {
 }
 
 /**
- * 预加载图片
- * @param {string|Array<string>} urls - 图片URL或URL数组
+ * Precargar imágenes
+ * @param {string|Array<string>} urls - URL de imagen o array de URLs
  * @returns {Promise}
  */
 export function preloadImages(urls) {
@@ -216,8 +216,8 @@ export function preloadImages(urls) {
 }
 
 /**
- * 获取图片尺寸
- * @param {string|File} source - 图片URL或文件
+ * Obtener dimensiones de imagen
+ * @param {string|File} source - URL de imagen o archivo
  * @returns {Promise<{width: number, height: number}>}
  */
 export function getImageDimensions(source) {
@@ -240,13 +240,13 @@ export function getImageDimensions(source) {
 }
 
 /**
- * 从URL加载图片并自动压缩和缩放
- * @param {string} imageUrl - 图片URL
- * @param {Object} options - 选项
- * @param {number} options.maxWidth - 最大宽度，默认1200
- * @param {number} options.maxHeight - 最大高度，默认1200
- * @param {number} options.quality - 压缩质量 (0-1)，默认0.85
- * @param {string} options.format - 输出格式 ('jpeg'|'webp'|'png')，默认'jpeg'
+ * Cargar imagen desde URL y comprimir/escalar automáticamente
+ * @param {string} imageUrl - URL de la imagen
+ * @param {Object} options - Opciones
+ * @param {number} options.maxWidth - Ancho máximo, por defecto 1200
+ * @param {number} options.maxHeight - Alto máximo, por defecto 1200
+ * @param {number} options.quality - Calidad de compresión (0-1), por defecto 0.85
+ * @param {string} options.format - Formato de salida ('jpeg'|'webp'|'png'), por defecto 'jpeg'
  * @returns {Promise<{dataUrl: string, blob: Blob, originalSize: number, compressedSize: number, dimensions: {width: number, height: number, originalWidth: number, originalHeight: number}}>}
  */
 export async function processImageFromUrl(imageUrl, options = {}) {
@@ -259,7 +259,7 @@ export async function processImageFromUrl(imageUrl, options = {}) {
 
   return new Promise((resolve, reject) => {
     const img = new Image()
-    img.crossOrigin = 'anonymous' // 允许跨域图片处理
+    img.crossOrigin = 'anonymous' // Permitir procesamiento de imágenes de origen cruzado
 
     img.onload = async () => {
       try {
@@ -267,7 +267,7 @@ export async function processImageFromUrl(imageUrl, options = {}) {
         const originalHeight = img.naturalHeight
         const originalSize = await getImageSizeFromUrl(imageUrl)
 
-        // 计算新尺寸，保持宽高比
+        // Calcular nuevo tamaño, mantener relación de aspecto
         let width = originalWidth
         let height = originalHeight
 
@@ -277,26 +277,26 @@ export async function processImageFromUrl(imageUrl, options = {}) {
           height = Math.round(height * ratio)
         }
 
-        // 创建canvas并绘制图片
+        // Crear canvas y dibujar imagen
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
         canvas.width = width
         canvas.height = height
 
-        // 绘制图片
+        // Dibujar imagen
         ctx.drawImage(img, 0, 0, width, height)
 
-        // 转换为Blob
+        // Convertir a Blob
         const mimeType = format === 'webp' ? 'image/webp' : format === 'png' ? 'image/png' : 'image/jpeg'
         
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              reject(new Error('图片处理失败'))
+              reject(new Error('Error al procesar imagen'))
               return
             }
 
-            // 转换为Data URL
+            // Convertir a Data URL
             const reader = new FileReader()
             reader.onloadend = () => {
               resolve({
@@ -312,7 +312,7 @@ export async function processImageFromUrl(imageUrl, options = {}) {
                 }
               })
             }
-            reader.onerror = () => reject(new Error('读取处理后的图片失败'))
+            reader.onerror = () => reject(new Error('Error al leer imagen procesada'))
             reader.readAsDataURL(blob)
           },
           mimeType,
@@ -324,12 +324,12 @@ export async function processImageFromUrl(imageUrl, options = {}) {
     }
 
     img.onerror = () => {
-      // 如果跨域失败，尝试不使用crossOrigin
+      // Si falla el origen cruzado, intentar sin crossOrigin
       if (img.crossOrigin) {
         img.crossOrigin = null
         img.src = imageUrl
       } else {
-        reject(new Error('图片加载失败，可能是跨域问题或URL无效'))
+        reject(new Error('Error al cargar imagen, puede ser un problema de origen cruzado o URL inválida'))
       }
     }
 
@@ -338,9 +338,9 @@ export async function processImageFromUrl(imageUrl, options = {}) {
 }
 
 /**
- * 获取图片文件大小（通过HEAD请求）
- * @param {string} url - 图片URL
- * @returns {Promise<number>} 文件大小（字节）
+ * Obtener tamaño del archivo de imagen (mediante solicitud HEAD)
+ * @param {string} url - URL de la imagen
+ * @returns {Promise<number>} Tamaño del archivo (bytes)
  */
 async function getImageSizeFromUrl(url) {
   try {
@@ -348,15 +348,15 @@ async function getImageSizeFromUrl(url) {
     const contentLength = response.headers.get('content-length')
     return contentLength ? parseInt(contentLength, 10) : 0
   } catch (error) {
-    // 如果HEAD请求失败，返回0
+    // Si la solicitud HEAD falla, retornar 0
     return 0
   }
 }
 
 /**
- * 格式化文件大小
- * @param {number} bytes - 字节数
- * @returns {string} 格式化后的大小
+ * Formatear tamaño de archivo
+ * @param {number} bytes - Número de bytes
+ * @returns {string} Tamaño formateado
  */
 export function formatFileSize(bytes) {
   if (bytes === 0) return '0 B'

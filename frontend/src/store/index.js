@@ -3,39 +3,52 @@ import { ref, computed, onMounted } from 'vue'
 import { productsAPI, categoriesAPI } from '../api'
 
 export const useJewelryStore = defineStore('jewelry', () => {
-  // 初始化为空数组，从API加载
+  // Inicializar como array vacío, cargar desde API
   const products = ref([])
   const isLoading = ref(false)
   const loadError = ref(null)
 
-  // 分类数据，也从API加载
+  // Datos de categorías, también cargados desde API
+  // Nota: Los nombres de categorías ahora se obtienen de i18n, aquí solo se mantienen ID e icono
   const categories = ref([
-    { id: 'rings', name: '戒指', icon: '💍' },
-    { id: 'necklaces', name: '项链', icon: '📿' },
-    { id: 'earrings', name: '耳环', icon: '👂' },
-    { id: 'bracelets', name: '手镯', icon: '💎' }
+    { id: 'rings', name: 'Anillos', icon: '💍' },
+    { id: 'necklaces', name: 'Collares', icon: '📿' },
+    { id: 'earrings', name: 'Aretes', icon: '👂' },
+    { id: 'bracelets', name: 'Pulseras', icon: '💎' }
   ])
 
-  // 从API加载商品
+  // Cargar productos desde API
   const loadProducts = async () => {
     isLoading.value = true
     loadError.value = null
     try {
+      console.log('🔄 Store: Iniciando carga de productos desde API...')
       const response = await productsAPI.getAll()
+      console.log('📦 Store: Respuesta de API recibida:', response)
       const productsList = response.products || []
       products.value = Array.isArray(productsList) ? productsList : []
-      console.log('✅ Store: 商品列表已加载', products.value.length, '个商品')
+      console.log('✅ Store: Lista de productos cargada', products.value.length, 'productos')
+      console.log('📊 Store: Productos destacados:', products.value.filter(p => p.featured).length)
+      if (products.value.length > 0) {
+        console.log('🔍 Store: Primer producto:', products.value[0])
+        console.log('⭐ Store: Featured del primer producto:', products.value[0].featured, typeof products.value[0].featured)
+      }
     } catch (error) {
-      console.error('❌ Store: 加载商品失败:', error)
-      loadError.value = error.message || '加载商品失败'
-      // 如果API失败，保持空数组
+      console.error('❌ Store: Error al cargar productos:', error)
+      console.error('❌ Store: Detalles del error:', {
+        message: error.message,
+        stack: error.stack,
+        details: error.details
+      })
+      loadError.value = error.message || 'Error al cargar productos'
+      // Si la API falla, mantener array vacío
       products.value = []
     } finally {
       isLoading.value = false
     }
   }
 
-  // 从API加载分类
+  // Cargar categorías desde API
   const loadCategories = async () => {
     try {
       const response = await categoriesAPI.getAll()
@@ -43,14 +56,14 @@ export const useJewelryStore = defineStore('jewelry', () => {
       if (Array.isArray(categoriesList) && categoriesList.length > 0) {
         categories.value = categoriesList
       }
-      console.log('✅ Store: 分类列表已加载', categories.value.length, '个分类')
+      console.log('✅ Store: Lista de categorías cargada', categories.value.length, 'categorías')
     } catch (error) {
-      console.error('❌ Store: 加载分类失败:', error)
-      // 如果API失败，使用默认分类
+      console.error('❌ Store: Error al cargar categorías:', error)
+      // Si la API falla, usar categorías por defecto
     }
   }
 
-  // 初始化加载数据
+  // Inicializar y cargar datos
   const initialize = async () => {
     await Promise.all([
       loadProducts(),
@@ -61,9 +74,40 @@ export const useJewelryStore = defineStore('jewelry', () => {
   const cart = ref([])
   const searchQuery = ref('')
 
-  const featuredProducts = computed(() => 
-    products.value.filter(p => p.featured)
-  )
+  const featuredProducts = computed(() => {
+    const featured = products.value.filter(p => {
+      // Manejar diferentes tipos de valores para featured (boolean, string, number)
+      const featuredValue = p.featured
+      if (featuredValue === true || featuredValue === 1 || featuredValue === '1' || featuredValue === 'true') {
+        return true
+      }
+      return false
+    })
+    
+    console.log('⭐ Store: FeaturedProducts calculado:', {
+      totalProducts: products.value.length,
+      featuredCount: featured.length,
+      featuredIds: featured.map(p => p.id)
+    })
+    
+    // Si no hay productos destacados, mostrar todos los productos (máximo 12)
+    // Esto asegura que siempre haya productos visibles en la página principal
+    if (featured.length === 0 && products.value.length > 0) {
+      console.log('⚠️ Store: No hay productos destacados, mostrando todos los productos')
+      return products.value.slice(0, 12)
+    }
+    
+    // Si hay productos destacados pero son menos de 3, agregar productos adicionales hasta tener al menos 3
+    if (featured.length > 0 && featured.length < 3 && products.value.length > featured.length) {
+      const additional = products.value
+        .filter(p => !featured.find(fp => fp.id === p.id))
+        .slice(0, 3 - featured.length)
+      console.log('📦 Store: Agregando productos adicionales para tener al menos 3:', additional.length)
+      return [...featured, ...additional]
+    }
+    
+    return featured
+  })
 
   const getProductById = (id) => {
     return products.value.find(p => p.id === parseInt(id))

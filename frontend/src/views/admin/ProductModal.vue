@@ -2,30 +2,40 @@
   <div class="modal-overlay" @click="$emit('close')">
     <div class="modal-content" @click.stop>
       <div class="modal-header">
-        <h3>{{ product ? '编辑商品' : '添加商品' }}</h3>
+        <h3>{{ product ? t('admin.products.edit') : t('admin.products.add') }}</h3>
         <button class="btn-close" @click="$emit('close')">×</button>
       </div>
 
       <form @submit.prevent="handleSubmit" class="product-form">
         <div class="form-group">
-          <label>商品名称 *</label>
+          <label>{{ t('admin.products.name') }} *</label>
           <input v-model="formData.name" type="text" required />
         </div>
 
         <div class="form-group">
-          <label>价格 (USD) *</label>
+          <label>{{ t('admin.products.price') }} *</label>
           <input v-model.number="formData.price" type="number" step="0.01" required />
         </div>
 
         <div class="form-group">
-          <label>条码号码</label>
-          <input v-model="formData.barcode" type="text" placeholder="请输入商品条码" />
+          <label>{{ t('admin.products.category') }} *</label>
+          <select v-model="formData.category" required>
+            <option value="">{{ t('admin.products.selectCategory') }}</option>
+            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+              {{ cat.icon }} {{ cat.name }}
+            </option>
+          </select>
         </div>
 
         <div class="form-group">
-          <label>商品图片 *</label>
+          <label>{{ t('admin.products.barcode') }}</label>
+          <input v-model="formData.barcode" type="text" :placeholder="t('admin.products.enterBarcode')" />
+        </div>
 
-          <!-- 本地文件选择 -->
+        <div class="form-group">
+          <label>{{ t('admin.products.image') }} *</label>
+
+          <!-- Selección de archivo local -->
           <div class="file-upload-wrapper">
             <input 
               ref="fileInput"
@@ -38,61 +48,61 @@
             <div class="file-upload-area" @click="$refs.fileInput?.click()">
               <div v-if="!selectedFileName" class="upload-placeholder">
                 <span class="upload-icon">📁</span>
-                <span>点击选择图片文件</span>
-                <span class="upload-hint">支持 JPG、PNG、WebP 等格式，将自动压缩</span>
+                <span>{{ t('admin.products.selectImage') }}</span>
+                <span class="upload-hint">{{ t('admin.products.imageHint') }}</span>
               </div>
               <div v-else class="selected-file">
                 <span class="file-icon">📄</span>
                 <span class="file-name">{{ selectedFileName }}</span>
-                <button type="button" class="btn-change-file" @click.stop="$refs.fileInput?.click()">更换</button>
+                <button type="button" class="btn-change-file" @click.stop="$refs.fileInput?.click()">{{ t('common.change') }}</button>
               </div>
             </div>
           </div>
           
-          <!-- 处理进度 -->
+          <!-- Progreso de procesamiento -->
           <div v-if="isProcessingImage" class="processing-status">
             <div class="processing-spinner"></div>
-            <span>正在处理图片（自动压缩和缩放）...</span>
+            <span>{{ t('admin.products.processing') }}</span>
           </div>
 
-          <!-- 处理结果信息 -->
+          <!-- Información de resultado del procesamiento -->
           <div v-if="imageProcessInfo && !isProcessingImage" class="image-info">
             <div class="info-row">
-              <span class="info-label">原始尺寸:</span>
+              <span class="info-label">{{ t('common.originalDimensions') }}:</span>
               <span>{{ imageProcessInfo.dimensions.originalWidth }} × {{ imageProcessInfo.dimensions.originalHeight }}px</span>
             </div>
             <div class="info-row">
-              <span class="info-label">处理后尺寸:</span>
+              <span class="info-label">{{ t('common.processedDimensions') }}:</span>
               <span class="success">{{ imageProcessInfo.dimensions.width }} × {{ imageProcessInfo.dimensions.height }}px</span>
             </div>
             <div class="info-row">
-              <span class="info-label">原始大小:</span>
+              <span class="info-label">{{ t('common.originalSize') }}:</span>
               <span>{{ formatFileSize(imageProcessInfo.originalSize) }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">处理后大小:</span>
+              <span class="info-label">{{ t('common.processedSize') }}:</span>
               <span class="success">{{ formatFileSize(imageProcessInfo.compressedSize) }}</span>
             </div>
             <div v-if="imageProcessInfo.originalSize > 0" class="info-row">
-              <span class="info-label">压缩率:</span>
+              <span class="info-label">{{ t('common.compressionRate') }}:</span>
               <span class="success">
                 {{ Math.round((1 - imageProcessInfo.compressedSize / imageProcessInfo.originalSize) * 100) }}%
               </span>
             </div>
           </div>
 
-          <!-- 图片预览 -->
+          <!-- Vista previa de imagen -->
           <div v-if="formData.image" class="image-preview-container">
-            <img :src="formData.image" alt="预览" class="image-preview" />
+            <img :src="formData.image" :alt="t('common.preview')" class="image-preview" />
             <div class="preview-overlay">
-              <button type="button" class="btn-remove-image" @click="removeImage">移除</button>
+              <button type="button" class="btn-remove-image" @click="removeImage">{{ t('common.remove') }}</button>
             </div>
           </div>
         </div>
 
         <div class="modal-actions">
-          <button type="button" @click="$emit('close')" class="btn-cancel">取消</button>
-          <button type="submit" class="btn-save">保存</button>
+          <button type="button" @click="$emit('close')" class="btn-cancel">{{ t('common.cancel') }}</button>
+          <button type="submit" class="btn-save">{{ t('common.save') }}</button>
         </div>
       </form>
     </div>
@@ -100,8 +110,11 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { processImageFile, formatFileSize } from '../../utils/imageProcessor'
+import { useI18n } from '../../i18n'
+import { useJewelryStore } from '../../store'
+import { categoriesAPI } from '../../api'
 
 const props = defineProps({
   product: {
@@ -111,12 +124,44 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'save'])
+const { t } = useI18n()
+const store = useJewelryStore()
 
 const formData = ref({
   name: '',
   price: 0,
+  category: '',
   barcode: '',
   image: '',
+})
+
+const categoriesRaw = ref([])
+
+// Cargar categorías desde API o store
+onMounted(async () => {
+  try {
+    // Intentar cargar desde API primero
+    const response = await categoriesAPI.getAll()
+    if (response.categories && Array.isArray(response.categories) && response.categories.length > 0) {
+      categoriesRaw.value = response.categories
+    } else {
+      // Si API no tiene categorías, usar las del store
+      categoriesRaw.value = store.categories
+    }
+  } catch (error) {
+    console.warn('No se pudieron cargar categorías desde API, usando categorías del store:', error)
+    // Usar categorías del store como fallback
+    categoriesRaw.value = store.categories
+  }
+})
+
+// Computed para categorías con nombres traducidos
+const categories = computed(() => {
+  return categoriesRaw.value.map(cat => ({
+    id: cat.id,
+    name: t(`categories.${cat.id}`) || cat.name || cat.id,
+    icon: cat.icon || '📦'
+  }))
 })
 
 const selectedFileName = ref('')
@@ -128,12 +173,13 @@ watch(() => props.product, (newProduct) => {
     formData.value = {
       name: newProduct.name || '',
       price: newProduct.price || 0,
+      category: newProduct.category || '',
       barcode: newProduct.barcode || '',
       image: newProduct.image || '',
     }
-    // 如果已有图片，显示文件名
+    // Si ya hay imagen, mostrar nombre de archivo
     if (newProduct.image) {
-      selectedFileName.value = '已上传的图片'
+      selectedFileName.value = 'Imagen cargada'
     } else {
       selectedFileName.value = ''
     }
@@ -142,6 +188,7 @@ watch(() => props.product, (newProduct) => {
     formData.value = {
       name: '',
       price: 0,
+      category: '',
       barcode: '',
       image: '',
     }
@@ -150,21 +197,21 @@ watch(() => props.product, (newProduct) => {
   }
 }, { immediate: true })
 
-// 处理本地文件选择
+// Procesar selección de archivo local
 const handleFileSelect = async (event) => {
   const file = event.target.files?.[0]
   if (!file) return
 
-  // 验证文件类型
+  // Validar tipo de archivo
   if (!file.type.startsWith('image/')) {
-    alert('请选择图片文件！')
+    alert(t('admin.products.imageRequired') || 'Por favor seleccione un archivo de imagen')
     return
   }
 
-  // 验证文件大小（限制10MB）
+  // Validar tamaño de archivo (límite 10MB)
   const maxSize = 10 * 1024 * 1024 // 10MB
   if (file.size > maxSize) {
-    alert('图片文件过大，请选择小于10MB的图片！')
+    alert('El archivo de imagen es demasiado grande, por favor seleccione una imagen menor a 10MB')
     return
   }
 
@@ -173,28 +220,28 @@ const handleFileSelect = async (event) => {
   imageProcessInfo.value = null
 
   try {
-    // 自动压缩和缩放图片
+    // Comprimir y redimensionar imagen automáticamente
     const result = await processImageFile(file, {
-      maxWidth: 1200,  // 最大宽度1200px
-      maxHeight: 1200, // 最大高度1200px
-      quality: 0.85,   // 压缩质量85%
-      format: 'jpeg'   // 输出格式JPEG
+      maxWidth: 1200,  // Ancho máximo 1200px
+      maxHeight: 1200, // Alto máximo 1200px
+      quality: 0.85,   // Calidad de compresión 85%
+      format: 'jpeg'   // Formato de salida JPEG
     })
 
-    // 使用处理后的图片
+    // Usar imagen procesada
     formData.value.image = result.dataUrl
     imageProcessInfo.value = result
     
-    console.log('✅ 图片处理完成:', {
-      原始大小: formatFileSize(result.originalSize),
-      处理后大小: formatFileSize(result.compressedSize),
-      压缩率: Math.round((1 - result.compressedSize / result.originalSize) * 100) + '%',
-      原始尺寸: `${result.dimensions.originalWidth} × ${result.dimensions.originalHeight}`,
-      处理后尺寸: `${result.dimensions.width} × ${result.dimensions.height}`
+    console.log('✅ Procesamiento de imagen completado:', {
+      tamañoOriginal: formatFileSize(result.originalSize),
+      tamañoProcesado: formatFileSize(result.compressedSize),
+      tasaCompresion: Math.round((1 - result.compressedSize / result.originalSize) * 100) + '%',
+      dimensionesOriginales: `${result.dimensions.originalWidth} × ${result.dimensions.originalHeight}`,
+      dimensionesProcesadas: `${result.dimensions.width} × ${result.dimensions.height}`
     })
   } catch (error) {
-    console.error('图片处理失败:', error)
-    alert('图片处理失败: ' + (error.message || '未知错误'))
+    console.error('Error al procesar imagen:', error)
+    alert('Error al procesar imagen: ' + (error.message || 'Error desconocido'))
     selectedFileName.value = ''
     imageProcessInfo.value = null
   } finally {
@@ -202,12 +249,12 @@ const handleFileSelect = async (event) => {
   }
 }
 
-// 移除图片
+// Eliminar imagen
 const removeImage = () => {
   formData.value.image = ''
   selectedFileName.value = ''
   imageProcessInfo.value = null
-  // 重置文件输入
+  // Restablecer entrada de archivo
   const fileInput = document.querySelector('.file-input')
   if (fileInput) {
     fileInput.value = ''
@@ -215,19 +262,24 @@ const removeImage = () => {
 }
 
 const handleSubmit = () => {
-  // 验证必填字段
+  // Validar campos requeridos
   if (!formData.value.name || !formData.value.name.trim()) {
-    alert('请输入商品名称')
+    alert(t('admin.products.nameRequired'))
     return
   }
 
   if (!formData.value.price || formData.value.price <= 0) {
-    alert('请输入有效的商品价格')
+    alert(t('admin.products.priceInvalid'))
+    return
+  }
+
+  if (!formData.value.category) {
+    alert(t('admin.products.categoryRequired'))
     return
   }
 
   if (!formData.value.image) {
-    alert('请选择商品图片')
+    alert(t('admin.products.imageRequired'))
     return
   }
 

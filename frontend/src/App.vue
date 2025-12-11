@@ -25,19 +25,19 @@ const route = useRoute()
 const toastRef = ref(null)
 const store = useJewelryStore()
 
-// 判断是否为后台路由
+// Determinar si es una ruta de administración
 const isAdminRoute = computed(() => {
   return route.path.startsWith('/admin')
 })
 
-// 提供toast方法给所有子组件使用
+// Proporcionar métodos toast para que los usen todos los componentes hijos
 provide('toast', {
   success: (message, duration) => toastRef.value?.success(message, duration),
   error: (message, duration) => toastRef.value?.error(message, duration),
   info: (message, duration) => toastRef.value?.info(message, duration)
 })
 
-// 监听路由变化，切换body类名
+// Observar cambios de ruta, cambiar clase del body
 watch(isAdminRoute, (isAdmin) => {
   if (isAdmin) {
     document.body.classList.add('admin-page')
@@ -47,37 +47,37 @@ watch(isAdminRoute, (isAdmin) => {
 }, { immediate: true })
 
 onMounted(async () => {
-  // 预加载关键资源
+  // Precargar recursos clave
   document.body.classList.add('loaded')
   
-  // 初始化admin-page类
+  // Inicializar clase admin-page
   if (isAdminRoute.value) {
     document.body.classList.add('admin-page')
   } else {
-    // 仅在前端页面初始化store数据（从API加载）
+    // Inicializar datos del store solo en páginas frontend (cargar desde API)
     try {
-      console.log('🔄 App: 初始化store，加载商品数据...')
+      console.log('🔄 App: Inicializando store, cargando datos de productos...')
       await store.initialize()
-      console.log('✅ App: 数据加载完成')
+      console.log('✅ App: Carga de datos completada')
     } catch (error) {
-      console.error('❌ App: 初始化store失败:', error)
-      // 如果是连接错误，提供更友好的提示
-      if (error.message && error.message.includes('无法连接到服务器')) {
-        console.warn('💡 提示: 请确保后端服务正在运行 (npm run dev in backend folder)')
+      console.error('❌ App: Error al inicializar store:', error)
+      // Si es un error de conexión, proporcionar una sugerencia más amigable
+      if (error.message && error.message.includes('No se pudo conectar al servidor')) {
+        console.warn('💡 Sugerencia: Asegúrese de que el servicio backend esté ejecutándose (npm run dev en la carpeta backend)')
       }
     }
   }
 })
 
-// 监听路由变化，当从后台返回前端时重新加载数据
+// Observar cambios de ruta, recargar datos cuando se regresa del panel de administración al frontend
 watch(() => route.path, async (newPath, oldPath) => {
-  // 如果从后台页面切换到前端页面，重新加载数据
+  // Si se cambia de página de administración a página frontend, recargar datos
   if (oldPath?.startsWith('/admin') && !newPath.startsWith('/admin')) {
     try {
-      console.log('🔄 App: 从后台返回前端，重新加载商品数据...')
+      console.log('🔄 App: Regresando del panel de administración al frontend, recargando datos de productos...')
       await store.loadProducts()
     } catch (error) {
-      console.error('❌ App: 重新加载商品失败:', error)
+      console.error('❌ App: Error al recargar productos:', error)
     }
   }
 })
@@ -89,14 +89,14 @@ watch(() => route.path, async (newPath, oldPath) => {
   display: flex;
   flex-direction: column;
 
-  // 后台页面样式
+  // Estilos de página de administración
   &.admin-layout {
     min-height: 100vh;
     background: var(--accent-color);
   }
 }
 
-// 后台页面body样式
+// Estilos del body para página de administración
 body.admin-page {
   margin: 0;
   padding: 0;

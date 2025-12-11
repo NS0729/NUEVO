@@ -4,8 +4,8 @@
     <section class="featured-section">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">精选推荐</h2>
-          <p class="section-subtitle">为您精心挑选的优质珠宝</p>
+          <h2 class="section-title">{{ t('home.featuredProducts') }}</h2>
+          <p class="section-subtitle">{{ t('home.featuredSubtitle') }}</p>
         </div>
         <div class="products-grid" :class="{ 'landscape-mode': isLandscape && isMobile }">
           <ProductCard
@@ -14,6 +14,12 @@
             :product="product"
             :is-landscape="isLandscape && isMobile"
           />
+          <div v-if="featuredProducts.length === 0 && !store.isLoading" class="empty-state">
+            <p>{{ t('home.noProducts') || 'No hay productos disponibles' }}</p>
+          </div>
+          <div v-if="store.isLoading" class="loading-state">
+            <p>{{ t('common.loading') || 'Cargando productos...' }}</p>
+          </div>
         </div>
       </div>
     </section>
@@ -24,23 +30,23 @@
         <div class="features-grid">
           <div class="feature-item">
             <div class="feature-icon">✨</div>
-            <h3>精选材质</h3>
-            <p>严格筛选优质材料，确保每一件珠宝的品质</p>
+            <h3>{{ t('home.features.material') }}</h3>
+            <p>{{ t('home.features.materialDesc') }}</p>
           </div>
           <div class="feature-item">
             <div class="feature-icon">🎨</div>
-            <h3>精湛工艺</h3>
-            <p>传承百年工艺，每一件都是艺术品</p>
+            <h3>{{ t('home.features.craft') }}</h3>
+            <p>{{ t('home.features.craftDesc') }}</p>
           </div>
           <div class="feature-item">
             <div class="feature-icon">📦</div>
-            <h3>精美包装</h3>
-            <p>专业包装，完美呈现您的珍贵礼物</p>
+            <h3>{{ t('home.features.packaging') }}</h3>
+            <p>{{ t('home.features.packagingDesc') }}</p>
           </div>
           <div class="feature-item">
             <div class="feature-icon">🛡️</div>
-            <h3>品质保证</h3>
-            <p>正品保证，提供权威认证证书</p>
+            <h3>{{ t('home.features.guarantee') }}</h3>
+            <p>{{ t('home.features.guaranteeDesc') }}</p>
           </div>
         </div>
       </div>
@@ -53,17 +59,28 @@ import { computed, onMounted } from 'vue'
 import { useJewelryStore } from '../store'
 import ProductCard from '../components/ProductCard.vue'
 import { useOrientation } from '../composables/useOrientation'
+import { useI18n } from '../i18n'
 
 const store = useJewelryStore()
+const { t } = useI18n()
 const featuredProducts = computed(() => store.featuredProducts)
 
-// 横屏检测
+// Detección de orientación horizontal
 const { isLandscape, isMobile } = useOrientation()
 
-// 如果商品列表为空，尝试加载
+// Si la lista de productos está vacía, intentar cargar
 onMounted(async () => {
+  console.log('🏠 Home: Componente montado')
+  console.log('🏠 Home: Estado inicial - productos:', store.products.length, 'isLoading:', store.isLoading)
+  console.log('🏠 Home: FeaturedProducts inicial:', featuredProducts.value.length)
+  
   if (store.products.length === 0 && !store.isLoading) {
+    console.log('🏠 Home: Cargando productos...')
     await store.loadProducts()
+    console.log('🏠 Home: Productos cargados - total:', store.products.length)
+    console.log('🏠 Home: FeaturedProducts después de cargar:', featuredProducts.value.length)
+  } else {
+    console.log('🏠 Home: Productos ya cargados o cargando')
   }
 })
 </script>
@@ -79,7 +96,7 @@ onMounted(async () => {
   
   @media (max-width: 768px) {
     padding: 3rem 0;
-    padding-bottom: 5rem; // 为底部导航栏预留空间
+    padding-bottom: 5rem; // Reservar espacio para la barra de navegación inferior
   }
   
   &::before {
@@ -154,7 +171,7 @@ onMounted(async () => {
     gap: 1.5rem;
   }
 
-  // 横屏模式：横向滚动布局
+  // Modo horizontal: diseño de desplazamiento horizontal
   &.landscape-mode {
     display: flex;
     flex-direction: row;
@@ -180,7 +197,7 @@ onMounted(async () => {
       border-radius: 3px;
     }
 
-    // 商品卡片在横屏时的样式
+    // Estilos de tarjeta de producto en modo horizontal
     :deep(.product-card) {
       flex: 0 0 auto;
       width: 85vw;
@@ -198,7 +215,7 @@ onMounted(async () => {
   
   @media (max-width: 768px) {
     padding: 3rem 0;
-    padding-bottom: 5rem; // 为底部导航栏预留空间
+    padding-bottom: 5rem; // Reservar espacio para la barra de navegación inferior
   }
   
   &::before {
@@ -257,6 +274,14 @@ onMounted(async () => {
     line-height: 1.8;
     font-size: 0.95rem;
   }
+}
+
+.empty-state, .loading-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
 }
 </style>
 

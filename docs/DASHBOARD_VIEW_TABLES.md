@@ -133,3 +133,4 @@ npx wrangler d1 execute jewelry-db --command="SELECT 'categories' as table_name,
 
 
 
+

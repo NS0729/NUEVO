@@ -22,10 +22,12 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useJewelryStore } from '../store'
+import { useI18n } from '../i18n'
 
 const route = useRoute()
 const router = useRouter()
 const store = useJewelryStore()
+const { t } = useI18n()
 
 const isMobile = ref(false)
 
@@ -49,19 +51,19 @@ const cartCount = computed(() => {
 const navItems = computed(() => [
   {
     path: '/',
-    label: '首页',
+    label: t('nav.home'),
     emoji: '🏠',
     icon: null
   },
   {
     path: '/search',
-    label: '搜索',
+    label: t('nav.search'),
     emoji: '🔍',
     icon: null
   },
   {
     path: '/cart',
-    label: '购物车',
+    label: t('nav.cart'),
     emoji: '🛒',
     icon: null,
     badge: cartCount.value > 0 ? cartCount.value : null
@@ -76,9 +78,9 @@ const isActive = (path) => {
 }
 
 const handleClick = (item) => {
-  // 可以在这里添加点击反馈
+  // Se puede agregar retroalimentación de clic aquí
   if (item.path === '/search') {
-    // 搜索页面可能需要特殊处理
+    // La página de búsqueda puede requerir procesamiento especial
   }
 }
 </script>
@@ -186,7 +188,7 @@ const handleClick = (item) => {
   transition: var(--transition);
 }
 
-// 为底部导航栏预留空间
+// Reservar espacio para la barra de navegación inferior
 :deep(.home),
 :deep(.category),
 :deep(.search),

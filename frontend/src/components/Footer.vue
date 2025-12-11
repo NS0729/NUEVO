@@ -3,16 +3,16 @@
     <div class="container">
       <div class="footer-content">
         <div class="footer-section">
-          <h3 class="footer-title">关于我们</h3>
+          <h3 class="footer-title">{{ t('footer.aboutUs') }}</h3>
           <p class="footer-text">
-            专业打造精美首饰，传承经典工艺，为您呈现最优雅的珠宝体验。
+            {{ t('footer.aboutText') }}
           </p>
         </div>
 
         <div class="footer-section">
-          <h3 class="footer-title">快速链接</h3>
+          <h3 class="footer-title">{{ t('footer.quickLinks') }}</h3>
           <ul class="footer-links">
-            <li><router-link to="/">首页</router-link></li>
+            <li><router-link to="/">{{ t('nav.home') }}</router-link></li>
             <li v-for="cat in categories" :key="cat.id">
               <router-link :to="`/category/${cat.id}`">{{ cat.name }}</router-link>
             </li>
@@ -20,7 +20,7 @@
         </div>
 
         <div class="footer-section">
-          <h3 class="footer-title">联系我们</h3>
+          <h3 class="footer-title">{{ t('footer.contactUs') }}</h3>
           <ul class="footer-contact">
             <li>
               <a href="https://wa.me/8613800138000" target="_blank" rel="noopener noreferrer" class="contact-link">
@@ -32,12 +32,12 @@
             </li>
             <li>📞 400-888-8888</li>
             <li>📧 service@jewelry.com</li>
-            <li>📍 北京市朝阳区珠宝大道1号</li>
+            <li>📍 {{ t('footer.address') }}</li>
           </ul>
         </div>
 
         <div class="footer-section">
-          <h3 class="footer-title">关注我们</h3>
+          <h3 class="footer-title">{{ t('footer.followUs') }}</h3>
           <div class="social-links">
             <a 
               href="https://wa.me/8613800138000" 
@@ -80,7 +80,7 @@
       </div>
 
       <div class="footer-bottom">
-        <p>&copy; 2024 精美首饰. 保留所有权利.</p>
+        <p>&copy; 2024 {{ t('home.title') }}. {{ t('footer.rights') }}</p>
       </div>
     </div>
   </footer>
@@ -88,8 +88,10 @@
 
 <script setup>
 import { useJewelryStore } from '../store'
+import { useI18n } from '../i18n'
 
 const store = useJewelryStore()
+const { t } = useI18n()
 const categories = store.categories
 </script>
 
@@ -103,7 +105,7 @@ const categories = store.categories
   
   @media (max-width: 768px) {
     padding: 3rem 0 2rem;
-    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px) + 80px); // 为底部导航栏预留空间
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px) + 80px); // Reservar espacio para la barra de navegación inferior
   }
   
   &::before {

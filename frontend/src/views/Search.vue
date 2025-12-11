@@ -6,7 +6,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="搜索首饰..."
+            :placeholder="t('search.placeholder')"
             class="search-input"
             @input="handleSearch"
             @keyup.enter="handleSearch"
@@ -22,14 +22,14 @@
 
       <div v-if="searchQuery" class="search-results">
         <div class="results-header">
-          <h2>搜索结果</h2>
-          <p class="results-count">找到 {{ searchResults.length }} 件商品</p>
+          <h2>{{ t('search.results') }}</h2>
+          <p class="results-count">{{ t('search.found', { count: searchResults.length }) }}</p>
         </div>
 
         <div v-if="searchResults.length === 0" class="empty-results">
           <div class="empty-icon">🔍</div>
-          <h3>未找到相关商品</h3>
-          <p>请尝试其他关键词</p>
+          <h3>{{ t('search.noResults') }}</h3>
+          <p>{{ t('search.tryOther') }}</p>
         </div>
 
         <div v-else class="products-grid" :class="{ 'landscape-mode': isLandscape && isMobile }">
@@ -43,7 +43,7 @@
       </div>
 
       <div v-else class="search-suggestions">
-        <h2>热门搜索</h2>
+        <h2>{{ t('search.hotSearch') }}</h2>
         <div class="suggestions-list">
           <button
             v-for="suggestion in suggestions"
@@ -56,7 +56,7 @@
         </div>
 
         <div class="categories-preview">
-          <h2>浏览分类</h2>
+          <h2>{{ t('search.browseCategories') }}</h2>
           <div class="categories-list">
             <router-link
               v-for="category in categories"
@@ -79,16 +79,18 @@ import { ref, computed, onMounted } from 'vue'
 import { useJewelryStore } from '../store'
 import ProductCard from '../components/ProductCard.vue'
 import { useOrientation } from '../composables/useOrientation'
+import { useI18n } from '../i18n'
 
-// 横屏检测
+// Detección de orientación horizontal
 const { isLandscape, isMobile } = useOrientation()
 
 const store = useJewelryStore()
+const { t } = useI18n()
 const searchQuery = ref('')
 const searchResults = ref([])
 
 const categories = store.categories
-const suggestions = ['钻石', '黄金', '珍珠', '翡翠', '蓝宝石', '戒指', '项链']
+const suggestions = ['Diamante', 'Oro', 'Perla', 'Jade', 'Zafiro', 'Anillo', 'Collar']
 
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
@@ -99,12 +101,12 @@ const handleSearch = () => {
 }
 
 onMounted(async () => {
-  // 如果商品列表为空，先加载商品
+  // Si la lista de productos está vacía, cargar productos primero
   if (store.products.length === 0 && !store.isLoading) {
     await store.loadProducts()
   }
   
-  // 如果有初始搜索查询，执行搜索
+  // Si hay una consulta de búsqueda inicial, ejecutar búsqueda
   if (store.searchQuery) {
     searchQuery.value = store.searchQuery
     handleSearch()
@@ -118,7 +120,7 @@ onMounted(async () => {
   min-height: 60vh;
 
   @media (max-width: 768px) {
-    padding-bottom: 6rem; // 为底部导航栏预留空间
+    padding-bottom: 6rem; // Reservar espacio para la barra de navegación inferior
   }
 }
 
@@ -163,7 +165,7 @@ onMounted(async () => {
 
   @media (max-width: 768px) {
     padding: 1rem 1.25rem;
-    font-size: 16px; // 防止iOS自动缩放
+    font-size: 16px; // Prevenir escalado automático de iOS
   }
 
   &::placeholder {
@@ -236,7 +238,7 @@ onMounted(async () => {
     gap: 1.5rem;
   }
 
-  // 横屏模式：横向滚动布局
+  // Modo horizontal: diseño de desplazamiento horizontal
   &.landscape-mode {
     display: flex;
     flex-direction: row;
@@ -262,7 +264,7 @@ onMounted(async () => {
       border-radius: 3px;
     }
 
-    // 商品卡片在横屏时的样式
+    // Estilos de tarjeta de producto en modo horizontal
     :deep(.product-card) {
       flex: 0 0 auto;
       width: 85vw;

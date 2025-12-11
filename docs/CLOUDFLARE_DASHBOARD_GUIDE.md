@@ -136,3 +136,4 @@ npx wrangler d1 execute jewelry-db --file=./migrations/0001_initial_schema.sql -
 
 
 
+
