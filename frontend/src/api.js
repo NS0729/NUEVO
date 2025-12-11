@@ -72,10 +72,29 @@ async function request(endpoint, options = {}) {
       hasAuth: !!config.headers?.Authorization,
       body: config.body ? '有body' : '无body'
     })
+    
     // 如果是网络错误，提供更友好的错误信息
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      throw new Error('无法连接到服务器，请检查后端服务是否运行')
+      const friendlyError = new Error('无法连接到服务器，请检查后端服务是否运行')
+      friendlyError.details = {
+        apiUrl: API_BASE_URL,
+        endpoint: endpoint,
+        suggestion: '请确保后端服务正在运行: cd backend && npm run dev'
+      }
+      throw friendlyError
     }
+    
+    // 如果是连接被拒绝
+    if (error.message && error.message.includes('ECONNREFUSED')) {
+      const friendlyError = new Error('无法连接到API服务器')
+      friendlyError.details = {
+        apiUrl: API_BASE_URL,
+        endpoint: endpoint,
+        suggestion: '请检查后端服务是否在端口8787上运行'
+      }
+      throw friendlyError
+    }
+    
     throw error
   }
 }
@@ -279,6 +298,31 @@ export const healthCheck = async () => {
   return request('/api/health')
 }
 
+/**
+ * 检查API连接状态
+ */
+export const checkApiConnection = async () => {
+  try {
+    const result = await healthCheck()
+    return { connected: true, status: 'ok', data: result }
+  } catch (error) {
+    console.error('API连接检查失败:', error)
+    return { 
+      connected: false, 
+      status: 'error', 
+      error: error.message,
+      apiUrl: API_BASE_URL
+    }
+  }
+}
+
+/**
+ * 获取API基础URL（用于调试）
+ */
+export const getApiBaseUrl = () => {
+  return API_BASE_URL
+}
+
 // 导出别名以保持兼容性
 export const adminAuth = adminAuthAPI
 
@@ -289,5 +333,7 @@ export default {
   adminAuth: adminAuthAPI,
   adminStats: adminStatsAPI,
   healthCheck,
+  checkApiConnection,
+  getApiBaseUrl,
 }
 

@@ -56,8 +56,13 @@ onMounted(async () => {
     try {
       console.log('🔄 App: 初始化store，加载商品数据...')
       await store.initialize()
+      console.log('✅ App: 数据加载完成')
     } catch (error) {
       console.error('❌ App: 初始化store失败:', error)
+      // 如果是连接错误，提供更友好的提示
+      if (error.message && error.message.includes('无法连接到服务器')) {
+        console.warn('💡 提示: 请确保后端服务正在运行 (npm run dev in backend folder)')
+      }
     }
   }
 })
