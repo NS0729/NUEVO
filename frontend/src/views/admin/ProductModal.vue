@@ -7,36 +7,23 @@
       </div>
 
       <form @submit.prevent="handleSubmit" class="product-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label>商品名称 *</label>
-            <input v-model="formData.name" type="text" required />
-          </div>
-          <div class="form-group">
-            <label>分类 *</label>
-            <select v-model="formData.category" required>
-              <option value="">请选择</option>
-              <option value="rings">戒指</option>
-              <option value="necklaces">项链</option>
-              <option value="earrings">耳环</option>
-              <option value="bracelets">手镯</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>价格 (USD) *</label>
-            <input v-model.number="formData.price" type="number" step="0.01" required />
-          </div>
-          <div class="form-group">
-            <label>原价 (USD)</label>
-            <input v-model.number="formData.originalPrice" type="number" step="0.01" />
-          </div>
+        <div class="form-group">
+          <label>商品名称 *</label>
+          <input v-model="formData.name" type="text" required />
         </div>
 
         <div class="form-group">
-          <label>主图 *</label>
+          <label>价格 (USD) *</label>
+          <input v-model.number="formData.price" type="number" step="0.01" required />
+        </div>
+
+        <div class="form-group">
+          <label>条码号码</label>
+          <input v-model="formData.barcode" type="text" placeholder="请输入商品条码" />
+        </div>
+
+        <div class="form-group">
+          <label>商品图片 *</label>
 
           <!-- 本地文件选择 -->
           <div class="file-upload-wrapper">
@@ -52,7 +39,7 @@
               <div v-if="!selectedFileName" class="upload-placeholder">
                 <span class="upload-icon">📁</span>
                 <span>点击选择图片文件</span>
-                <span class="upload-hint">支持 JPG、PNG、WebP 等格式</span>
+                <span class="upload-hint">支持 JPG、PNG、WebP 等格式，将自动压缩</span>
               </div>
               <div v-else class="selected-file">
                 <span class="file-icon">📄</span>
@@ -65,7 +52,7 @@
           <!-- 处理进度 -->
           <div v-if="isProcessingImage" class="processing-status">
             <div class="processing-spinner"></div>
-            <span>正在处理图片...</span>
+            <span>正在处理图片（自动压缩和缩放）...</span>
           </div>
 
           <!-- 处理结果信息 -->
@@ -103,42 +90,6 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label>商品描述 *</label>
-          <textarea v-model="formData.description" rows="4" required></textarea>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>材质</label>
-            <input v-model="formData.material" type="text" />
-          </div>
-          <div class="form-group">
-            <label>主石</label>
-            <input v-model="formData.stone" type="text" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>尺寸</label>
-          <input v-model="formData.size" type="text" />
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>
-              <input v-model="formData.inStock" type="checkbox" />
-              有库存
-            </label>
-          </div>
-          <div class="form-group">
-            <label>
-              <input v-model="formData.featured" type="checkbox" />
-              精选商品
-            </label>
-          </div>
-        </div>
-
         <div class="modal-actions">
           <button type="button" @click="$emit('close')" class="btn-cancel">取消</button>
           <button type="submit" class="btn-save">保存</button>
@@ -163,16 +114,9 @@ const emit = defineEmits(['close', 'save'])
 
 const formData = ref({
   name: '',
-  category: '',
   price: 0,
-  originalPrice: null,
+  barcode: '',
   image: '',
-  description: '',
-  material: '',
-  stone: '',
-  size: '',
-  inStock: true,
-  featured: false,
 })
 
 const selectedFileName = ref('')
@@ -183,16 +127,9 @@ watch(() => props.product, (newProduct) => {
   if (newProduct) {
     formData.value = {
       name: newProduct.name || '',
-      category: newProduct.category || '',
       price: newProduct.price || 0,
-      originalPrice: newProduct.originalPrice || null,
+      barcode: newProduct.barcode || '',
       image: newProduct.image || '',
-      description: newProduct.description || '',
-      material: newProduct.material || '',
-      stone: newProduct.stone || '',
-      size: newProduct.size || '',
-      inStock: newProduct.inStock !== false,
-      featured: newProduct.featured === true,
     }
     // 如果已有图片，显示文件名
     if (newProduct.image) {
@@ -204,22 +141,14 @@ watch(() => props.product, (newProduct) => {
   } else {
     formData.value = {
       name: '',
-      category: '',
       price: 0,
-      originalPrice: null,
+      barcode: '',
       image: '',
-      description: '',
-      material: '',
-      stone: '',
-      size: '',
-      inStock: true,
-      featured: false,
     }
     selectedFileName.value = ''
     imageProcessInfo.value = null
   }
 }, { immediate: true })
-
 
 // 处理本地文件选择
 const handleFileSelect = async (event) => {
@@ -244,20 +173,30 @@ const handleFileSelect = async (event) => {
   imageProcessInfo.value = null
 
   try {
+    // 自动压缩和缩放图片
     const result = await processImageFile(file, {
-      maxWidth: 1200,
-      maxHeight: 1200,
-      quality: 0.85,
-      format: 'jpeg'
+      maxWidth: 1200,  // 最大宽度1200px
+      maxHeight: 1200, // 最大高度1200px
+      quality: 0.85,   // 压缩质量85%
+      format: 'jpeg'   // 输出格式JPEG
     })
 
     // 使用处理后的图片
     formData.value.image = result.dataUrl
     imageProcessInfo.value = result
+    
+    console.log('✅ 图片处理完成:', {
+      原始大小: formatFileSize(result.originalSize),
+      处理后大小: formatFileSize(result.compressedSize),
+      压缩率: Math.round((1 - result.compressedSize / result.originalSize) * 100) + '%',
+      原始尺寸: `${result.dimensions.originalWidth} × ${result.dimensions.originalHeight}`,
+      处理后尺寸: `${result.dimensions.width} × ${result.dimensions.height}`
+    })
   } catch (error) {
     console.error('图片处理失败:', error)
     alert('图片处理失败: ' + (error.message || '未知错误'))
     selectedFileName.value = ''
+    imageProcessInfo.value = null
   } finally {
     isProcessingImage.value = false
   }
@@ -282,23 +221,13 @@ const handleSubmit = () => {
     return
   }
 
-  if (!formData.value.category) {
-    alert('请选择商品分类')
-    return
-  }
-
   if (!formData.value.price || formData.value.price <= 0) {
     alert('请输入有效的商品价格')
     return
   }
 
   if (!formData.value.image) {
-    alert('请选择图片文件')
-    return
-  }
-
-  if (!formData.value.description || !formData.value.description.trim()) {
-    alert('请输入商品描述')
+    alert('请选择商品图片')
     return
   }
 

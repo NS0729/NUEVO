@@ -20,40 +20,20 @@
       <table v-else>
         <thead>
           <tr>
-            <th>ID</th>
             <th>商品名称</th>
-            <th>分类</th>
             <th>价格</th>
-            <th>原价</th>
-            <th>库存</th>
-            <th>精选</th>
+            <th>条码</th>
             <th>操作</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="product in products" :key="product.id">
-            <td>{{ product.id }}</td>
             <td>
-              <div class="product-info">
-                <img :src="product.image" :alt="product.name" class="product-thumb" />
-                <span>{{ product.name }}</span>
-              </div>
+              <span class="product-name">{{ product.name }}</span>
             </td>
-            <td>{{ getCategoryName(product.category) }}</td>
             <td class="price">${{ formatPrice(product.price) }}</td>
-            <td class="price" v-if="product.originalPrice">
-              <span class="original">${{ formatPrice(product.originalPrice) }}</span>
-            </td>
-            <td v-else>-</td>
             <td>
-              <span :class="['stock-badge', product.inStock ? 'in-stock' : 'out-stock']">
-                {{ product.inStock ? '有货' : '缺货' }}
-              </span>
-            </td>
-            <td>
-              <span :class="['featured-badge', product.featured ? 'yes' : 'no']">
-                {{ product.featured ? '是' : '否' }}
-              </span>
+              <span class="barcode">{{ product.barcode || '-' }}</span>
             </td>
             <td>
               <div class="action-buttons">
@@ -88,16 +68,6 @@ const showAddModal = ref(false)
 const editingProduct = ref(null)
 const toast = useToast()
 
-const categories = [
-  { id: 'rings', name: '戒指' },
-  { id: 'necklaces', name: '项链' },
-  { id: 'earrings', name: '耳环' },
-  { id: 'bracelets', name: '手镯' },
-]
-
-const getCategoryName = (categoryId) => {
-  return categories.find(c => c.id === categoryId)?.name || categoryId
-}
 
 const loadProducts = async () => {
   try {
@@ -145,45 +115,40 @@ const handleSave = async (productData) => {
       toast.error('请输入商品名称')
       return
     }
-    if (!productData.category) {
-      toast.error('请选择商品分类')
-      return
-    }
     if (!productData.price || productData.price <= 0) {
       toast.error('请输入有效的商品价格')
       return
     }
-    if (!productData.image) {
-      toast.error('请选择商品图片')
-      return
-    }
 
     console.log('💾 开始保存商品:', productData.name)
-    console.log('📦 商品数据:', {
-      name: productData.name,
-      category: productData.category,
-      price: productData.price,
-      hasImage: !!productData.image,
-      imageLength: productData.image?.length || 0
-    })
-
-    // 确保价格是数字
-    const productDataToSend = {
-      ...productData,
-      price: Number(productData.price),
-      originalPrice: productData.originalPrice ? Number(productData.originalPrice) : null,
-      inStock: Boolean(productData.inStock),
-      featured: Boolean(productData.featured)
-    }
 
     if (editingProduct.value) {
-      // 更新商品
+      // 更新商品：更新名称、价格、条码和图片，保留其他字段
+      const productDataToSend = {
+        ...editingProduct.value, // 保留原有商品的所有字段
+        name: productData.name.trim(), // 更新名称
+        price: Number(productData.price), // 更新价格
+        barcode: productData.barcode || '', // 更新条码
+        image: productData.image || editingProduct.value.image || '', // 更新图片（如果有新图片）
+      }
       console.log('📝 更新商品 ID:', editingProduct.value.id)
       const response = await productsAPI.update(editingProduct.value.id, productDataToSend)
       console.log('✅ 更新商品响应:', response)
       toast.success('商品已更新')
     } else {
-      // 添加新商品
+      // 添加新商品：需要提供默认值
+      const productDataToSend = {
+        name: productData.name.trim(),
+        price: Number(productData.price),
+        barcode: productData.barcode || '',
+        image: productData.image || '',
+        category: 'rings', // 默认分类
+        description: '', // 默认空描述
+        material: '', // 默认空材质
+        originalPrice: null,
+        inStock: true,
+        featured: false,
+      }
       console.log('➕ 创建新商品')
       const response = await productsAPI.create(productDataToSend)
       console.log('✅ 创建商品响应:', response)
@@ -312,17 +277,18 @@ td {
   color: var(--text-secondary);
 }
 
-.product-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.product-name {
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.product-thumb {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-  border-radius: 8px;
+.barcode {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  background: var(--accent-color);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
 }
 
 .price {
@@ -336,33 +302,6 @@ td {
   }
 }
 
-.stock-badge,
-.featured-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.stock-badge.in-stock {
-  background: #d4edda;
-  color: #155724;
-}
-
-.stock-badge.out-stock {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.featured-badge.yes {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.featured-badge.no {
-  background: var(--accent-color);
-  color: var(--text-secondary);
-}
 
 .action-buttons {
   display: flex;
